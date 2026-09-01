@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints
+
+# OS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment Variables
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Trained Models
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# Explicitly track data directory
+!data/
+!data/failed_payments.csv
