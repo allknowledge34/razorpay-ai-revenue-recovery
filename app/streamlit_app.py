@@ -40,7 +40,7 @@ def main():
         return
 
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring"])
 
     with tab1:
         st.header("Payment Simulation")
@@ -306,6 +306,58 @@ def main():
                  "Retry %": f"{high_row['retry_percentage']:.1f}%", "Net Recovery": f"₹{high_row['expected_net_recovery']:,.2f}"}
             ]
             st.table(pd.DataFrame(sens_data).set_index("Cost Scenario"))
+
+
+    with tab4:
+        st.header("Synthetic / Offline Monitoring")
+        st.info("Disclaimer: This is a synthetic/offline monitoring framework demonstrated using synthetic data. It does not represent real-time monitoring, real customer data, real Razorpay metrics, or production model degradation.")
+        
+        try:
+            from src.monitoring import MonitoringEngine
+            monitor = MonitoringEngine()
+            
+            df_raw = pd.read_csv("data/failed_payments.csv")
+            df_scored = pd.read_csv("data/failed_payments_scored.csv")
+            
+            st.subheader("1. Data Quality Summary")
+            dq = monitor.check_data_quality(df_raw)
+            
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Total Records", dq["total_records"])
+            col2.metric("Missing Values", dq["missing_value_count"])
+            col3.metric("Validation Failures", dq["validation_failure_count"])
+            col4.metric("Failure Rate", f"{dq['validation_failure_rate']*100:.1f}%")
+            
+            st.subheader("2. Prediction Summary (Reference)")
+            pred_summary = monitor.summarize_predictions(df_scored)
+            
+            if "recovery_probability" in pred_summary:
+                rp = pred_summary["recovery_probability"]
+                col_rp1, col_rp2, col_rp3 = st.columns(3)
+                col_rp1.metric("Mean Recovery Prob", f"{rp['mean']:.3f}")
+                col_rp2.metric("Median Recovery Prob", f"{rp['median']:.3f}")
+                col_rp3.metric("Max Recovery Prob", f"{rp['max']:.3f}")
+                
+            st.subheader("3. Controlled Drift Simulation")
+            st.write("Click below to apply a controlled synthetic shift to the raw input dataset (e.g., inflating payment amounts, degrading success rates) and compute PSI metrics.")
+            
+            if st.button("Run Drift Simulation"):
+                with st.spinner("Simulating data drift..."):
+                    df_drift = monitor.simulate_drift(df_raw)
+                    drift_metrics = monitor.calculate_drift_metrics(df_raw, df_drift)
+                    
+                    st.write("**Drift Metrics (PSI)**")
+                    
+                    # Apply color formatting
+                    def color_status(val):
+                        color = 'green' if val == 'NORMAL' else 'orange' if val == 'WARNING' else 'red'
+                        return f'color: {color}'
+                    
+                    st.dataframe(drift_metrics.style.map(color_status, subset=['status']), use_container_width=True)
+                    
+        except Exception as e:
+            st.error(f"Failed to load monitoring module: {str(e)}")
+
 
 if __name__ == "__main__":
     main()

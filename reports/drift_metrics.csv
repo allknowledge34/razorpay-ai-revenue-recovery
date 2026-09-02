@@ -1,0 +1,7 @@
+feature,type,drift_metric_psi,status
+payment_amount,numeric,0.5776,DRIFT
+customer_tenure_months,numeric,0.0,NORMAL
+historical_success_rate,numeric,4.5738,DRIFT
+failure_reason,categorical,0.2919,DRIFT
+payment_method,categorical,0.0,NORMAL
+is_subscription,categorical,0.0,NORMAL
