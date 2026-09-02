@@ -21,6 +21,7 @@ env/
 # Environment Variables
 .env
 .env.*
+.env.example
 
 # Logs
 *.log
@@ -37,3 +38,5 @@ logs/
 !data/
 !data/failed_payments.csv
 !models/revenue_recovery_model.joblib
+.env.local
+!.env.example

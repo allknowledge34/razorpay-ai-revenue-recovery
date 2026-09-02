@@ -40,7 +40,12 @@ def main():
         return
 
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring", "Outcome Simulation", "Audit Trail", "Real-Time Inference Demo"])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+        "Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator",
+        "Monitoring", "Outcome Simulation", "Audit Trail",
+        "Real-Time Inference Demo", "PostgreSQL Status"
+    ])
+
 
     with tab1:
         st.header("Payment Simulation")
@@ -562,6 +567,47 @@ def main():
                             
         except Exception as e:
             st.error(f"Failed to load Inference Service: {str(e)}")
+
+    with tab8:
+        st.header("PostgreSQL Persistence Status")
+        st.caption(
+            "Local demo infrastructure only. This database stores synthetic inference records. "
+            "It does NOT represent real Razorpay payment execution or real customer data."
+        )
+
+        try:
+            from src.database import is_database_available, get_table_counts, get_database_url
+
+            db_url = get_database_url()
+            if not db_url:
+                st.warning("DATABASE_URL is not configured. Copy `.env.example` to `.env` and set your credentials.")
+            else:
+                if is_database_available():
+                    st.success("PostgreSQL: Connected")
+                    counts = get_table_counts()
+                    c1, c2, c3, c4 = st.columns(4)
+                    c1.metric("Payment Events", counts.get('payment_events', 0))
+                    c2.metric("Recovery Decisions", counts.get('recovery_decisions', 0))
+                    c3.metric("Audit Records", counts.get('audit_records', 0))
+                    c4.metric("Recovery Outcomes", counts.get('recovery_outcomes', 0))
+
+                    with st.expander("Model Versions Registered"):
+                        st.write(f"Model Versions: **{counts.get('model_versions', 0)}**")
+
+                    st.info(
+                        "Persistence is active. Recovery decisions from the Real-Time Inference Demo "
+                        "tab are stored in PostgreSQL when DATABASE_URL is configured."
+                    )
+                else:
+                    st.error("PostgreSQL: Unavailable")
+                    st.info(
+                        "The inference pipeline continues to function in stateless mode. "
+                        "Start PostgreSQL with Docker to enable persistence:\n\n"
+                        "```bash\ndocker compose up -d\n```\n\n"
+                        "Then ensure DATABASE_URL is set in your `.env` file."
+                    )
+        except Exception as e:
+            st.error(f"PostgreSQL status check failed: {str(e)}")
 
 if __name__ == "__main__":
     main()

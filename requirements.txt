@@ -8,3 +8,5 @@ seaborn
 streamlit
 jupyter
 pytest
+psycopg[binary]
+python-dotenv

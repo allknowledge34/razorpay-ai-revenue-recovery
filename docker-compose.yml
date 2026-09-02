@@ -1,0 +1,39 @@
+# =============================================================================
+# AI Revenue Recovery Engine — Local Docker PostgreSQL (OPTIONAL)
+#
+# PRIMARY DATABASE: Neon PostgreSQL (hosted)
+#   Set DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require
+#   in your .env file pointing to your Neon project.
+#
+# OPTIONAL LOCAL DEVELOPMENT DATABASE (this file):
+#   Use only if you prefer a local PostgreSQL container instead of Neon.
+#   Set DATABASE_URL in .env to:
+#     DATABASE_URL=postgresql://recovery_app:<password>@localhost:5432/recovery_db
+#
+# The application connects via DATABASE_URL only — not directly to localhost.
+# NEVER commit .env or real credentials to Git.
+# =============================================================================
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: recovery_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-recovery_db}
+      POSTGRES_USER: ${POSTGRES_USER:-recovery_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - recovery_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-recovery_app} -d ${POSTGRES_DB:-recovery_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  recovery_pg_data:

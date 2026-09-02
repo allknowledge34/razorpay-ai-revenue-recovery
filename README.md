@@ -144,11 +144,11 @@ Machine learning decisions in finance must be explainable. The project will inte
 ## Technology Stack
 - **Python:** Core language
 - **Pandas & NumPy:** Data manipulation
-- **Scikit-learn:** ML utilities, metrics, baselines
-- **Logistic Regression & XGBoost:** Advanced predictive modeling
+- **Scikit-learn & XGBoost:** Advanced predictive modeling
 - **SHAP:** Model explainability
 - **Matplotlib & Seaborn:** Visualizations
-- **Streamlit:** Interactive web interface (Planned)
+- **Streamlit:** Interactive web interface
+- **Neon PostgreSQL & psycopg:** Hosted relational database persistence (Local Docker PostgreSQL optional)
 
 ## Reproducibility / How to Generate and Validate Dataset
 To generate the dataset from scratch using a fixed random seed:
@@ -160,6 +160,15 @@ To validate the generated dataset for missing values, distribution, and target l
 ```bash
 python3 src/validate_dataset.py
 ```
+
+## Database Persistence (Stage 16)
+Neon PostgreSQL is used as the primary hosted database. To enable persistence:
+1. Copy `.env.example` to `.env`
+2. Provide your Neon connection string in `DATABASE_URL`
+   *(e.g., `DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require`)*
+3. The schema will automatically initialize on the first connection.
+
+*Note: Local Docker PostgreSQL is available as an optional development fallback via `docker-compose up -d`.*
 
 ## Development Roadmap
 - **Stage 1 & 2:** Project Foundation & Dataset Design *(Completed)*
@@ -173,7 +182,7 @@ python3 src/validate_dataset.py
 
 ## Limitations
 - **Synthetic Data:** The relationships in the data are simulated based on logical assumptions, not real-world merchant telemetry.
-- **Scope:** This is an isolated ML pipeline, not a production-ready microservice with APIs or database integrations.
+- **Scope:** While Neon PostgreSQL is used as the hosted PostgreSQL persistence layer (and local Docker PostgreSQL is available as an optional development fallback), the system is a demonstration ML pipeline. It evaluates and recommends actions but does NOT execute real Razorpay API payment actions. It is not a production payment execution system.
 
 ## License / Project Context
 This repository is created as a submission for the **Razorpay AI Builder Challenge**.
