@@ -120,7 +120,7 @@ Machine learning decisions in finance must be explainable. The project will inte
 | **Model Training** | ✅ Completed | Training and tuning Logistic Regression and XGBoost. |
 | **Model Evaluation** | ✅ Completed | Calculating AUC and calibrating probabilities. |
 | **SHAP Integration** | ✅ Completed | Global and local explainability. |
-| **Streamlit Dashboard** | ⏳ Planned | Interactive UI for demonstrating the model. |
+| **Streamlit Dashboard** | ✅ Completed | Interactive UI for demonstrating the model. |
 
 ## Repository Structure
 ```text
@@ -165,8 +165,8 @@ python3 src/validate_dataset.py
 - **Stage 1 & 2:** Project Foundation & Dataset Design *(Completed)*
 - **Stage 3:** Exploratory Data Analysis & Preprocessing *(Completed)*
 - **Stage 4:** Model Training, Tuning, & Evaluation *(Completed)*
-- **Stage 5:** SHAP Integration & Recovery Logic
-- **Stage 6:** Streamlit Dashboard Implementation
+- **Stage 5:** SHAP Integration & Recovery Logic *(Completed)*
+- **Stage 6:** Streamlit Dashboard Implementation *(Completed)*
 
 ## Limitations
 - **Synthetic Data:** The relationships in the data are simulated based on logical assumptions, not real-world merchant telemetry.
@@ -174,3 +174,9 @@ python3 src/validate_dataset.py
 
 ## License / Project Context
 This repository is created as a submission for the **Razorpay AI Builder Challenge**.
+
+## Running the Streamlit Dashboard
+To launch the interactive demo application, run:
+```bash
+streamlit run app/streamlit_app.py
+```
