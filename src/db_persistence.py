@@ -23,9 +23,7 @@ from src.database import get_connection, DatabaseUnavailableError
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
 # Idempotency key resolution
-# ---------------------------------------------------------------------------
 
 def resolve_idempotency_key(event: Dict[str, Any]) -> Tuple[str, str]:
     """
@@ -46,9 +44,7 @@ def resolve_idempotency_key(event: Dict[str, Any]) -> Tuple[str, str]:
     return str(uuid.uuid4()), 'request_scoped_fallback'
 
 
-# ---------------------------------------------------------------------------
 # Payment event persistence
-# ---------------------------------------------------------------------------
 
 def persist_payment_event(
     event: Dict[str, Any],
@@ -130,9 +126,7 @@ def update_event_status(event_id: str, status: str) -> None:
         conn.commit()
 
 
-# ---------------------------------------------------------------------------
 # Recovery decision persistence
-# ---------------------------------------------------------------------------
 
 def persist_recovery_decision(
     event_id: str,
@@ -183,9 +177,7 @@ def persist_recovery_decision(
     return str(row[0]) if row else None
 
 
-# ---------------------------------------------------------------------------
 # Audit record persistence
-# ---------------------------------------------------------------------------
 
 def persist_audit_record(
     decision_id: str,
@@ -236,9 +228,7 @@ def persist_audit_record(
         conn.commit()
 
 
-# ---------------------------------------------------------------------------
 # Outcome persistence
-# ---------------------------------------------------------------------------
 
 def persist_simulated_outcome(
     decision_id: str,
@@ -282,9 +272,7 @@ def persist_simulated_outcome(
         conn.commit()
 
 
-# ---------------------------------------------------------------------------
 # Duplicate event retrieval
-# ---------------------------------------------------------------------------
 
 def get_existing_decision_for_event(event_id: str) -> Optional[Dict[str, Any]]:
     """

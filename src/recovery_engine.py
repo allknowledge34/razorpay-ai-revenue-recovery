@@ -170,7 +170,6 @@ if __name__ == "__main__":
     print("Initializing Recovery Engine...")
     engine = RecoveryEngine()
     
-    # 1. Test Single Predictions (Realistic Examples)
     print("\\n--- Testing Single Predictions ---")
     
     # Example A: Technical Error (High historical success, recent success)
@@ -227,11 +226,9 @@ if __name__ == "__main__":
         print(f"  Prior:  {res['priority']}")
         print(f"  Action: {res['recommended_action']}")
         
-        # Validation Check
         assert 0.0 <= res['recovery_probability'] <= 1.0
         assert res['expected_recovery'] >= 0.0
 
-    # 2. Test Batch Predictions
     print("\\n--- Testing Batch Predictions ---")
     input_file = 'data/failed_payments.csv'
     output_file = 'data/failed_payments_scored.csv'
@@ -248,7 +245,6 @@ if __name__ == "__main__":
     assert scored_df['recovery_probability'].max() <= 1.0
     assert scored_df['expected_recovery'].min() >= 0.0
 
-    # 3. Generate Visuals & Documentation
     print("\\n--- Generating Reports ---")
     generate_visuals(scored_df)
     write_markdown_report()

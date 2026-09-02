@@ -5,7 +5,6 @@ import os
 def generate_failed_payments_data(n_samples=20000, seed=42):
     np.random.seed(seed)
     
-    # 1. Base Customer & Payment Features
     payment_amount = np.random.lognormal(mean=np.log(500), sigma=1.0, size=n_samples)
     payment_amount = np.clip(payment_amount, 10, 50000).round(2)
     
@@ -31,7 +30,6 @@ def generate_failed_payments_data(n_samples=20000, seed=42):
     days_overdue = np.random.randint(1, 30, size=n_samples)
     recovery_attempts_so_far = np.random.randint(0, 4, size=n_samples)
     
-    # 2. Simulate Target Relationship
     # We use a logistic-style approach to create realistic noisy correlations.
     logits = -0.5
     logits += (historical_success_rate - 0.5) * 3.0
@@ -53,7 +51,6 @@ def generate_failed_payments_data(n_samples=20000, seed=42):
     probs = 1 / (1 + np.exp(-logits))
     recovered = np.random.binomial(1, probs)
     
-    # 3. Create DataFrame
     df = pd.DataFrame({
         'payment_id': [f"pay_{i:06d}" for i in range(1, n_samples + 1)],
         'customer_id': [f"cust_{np.random.randint(10000, 99999)}" for _ in range(n_samples)],

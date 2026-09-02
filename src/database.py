@@ -22,9 +22,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
 # Connection helpers
-# ---------------------------------------------------------------------------
 
 def get_database_url() -> Optional[str]:
     """Return DATABASE_URL from environment, or None if not configured."""
@@ -78,9 +76,7 @@ def is_database_available() -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------
 # Schema initialization
-# ---------------------------------------------------------------------------
 
 _SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS model_versions (
@@ -209,9 +205,7 @@ def initialize_schema() -> None:
     logger.info("Database schema initialized successfully.")
 
 
-# ---------------------------------------------------------------------------
 # Model version helpers
-# ---------------------------------------------------------------------------
 
 def get_or_create_model_version(model_name: str, model_version: str,
                                  calibration_version: Optional[str] = None) -> str:
@@ -242,9 +236,7 @@ def get_or_create_model_version(model_name: str, model_version: str,
     return model_version_id
 
 
-# ---------------------------------------------------------------------------
 # Stats helpers for Streamlit
-# ---------------------------------------------------------------------------
 
 def get_table_counts() -> dict:
     """Return row counts for all five tables. Returns zeros if DB unavailable."""
@@ -262,9 +254,7 @@ def get_table_counts() -> dict:
                                 'recovery_outcomes', 'model_versions']}
 
 
-# ---------------------------------------------------------------------------
 # Custom exceptions
-# ---------------------------------------------------------------------------
 
 class DatabaseUnavailableError(Exception):
     """Raised when the database cannot be reached or DATABASE_URL is not set."""

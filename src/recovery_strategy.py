@@ -130,7 +130,6 @@ def run_simulation():
     sim = RecoverySimulator()
     action_cost_base = sim.costs['retry_cost'] + sim.costs['customer_friction_cost']
     
-    # Validation checks on data
     assert (sim.df['recovery_probability'] >= 0).all() and (sim.df['recovery_probability'] <= 1).all(), "Probabilities not between 0 and 1"
     assert (sim.df['expected_recovery'] >= 0).all(), "Expected recovery must be non-negative"
     
@@ -138,7 +137,6 @@ def run_simulation():
     strat_a = sim.evaluate_strategy_a_blind_retry()
     strat_b = sim.evaluate_strategy_b_rule_based()
     
-    # Validation check: Strategy B gross recovery should not equal Strategy A gross recovery
     assert strat_a['expected_recovery'] > strat_b['expected_recovery'], "Strategy B expected recovery should be lower due to action multipliers"
     
     # Task 4: Threshold Analysis
@@ -184,9 +182,7 @@ def run_simulation():
     df_sens = pd.DataFrame(sensitivity_results)
     df_sens.to_csv('reports/threshold_sensitivity.csv', index=False)
     
-    # -----------------------------------------------------
     # Visualization Generation
-    # -----------------------------------------------------
     
     # Plot 1: Net Recovery by Threshold
     plt.figure(figsize=(10, 6))
@@ -227,9 +223,7 @@ def run_simulation():
     plt.savefig('reports/threshold_sensitivity.png')
     plt.close()
 
-    # -----------------------------------------------------
     # Markdown Report Generation
-    # -----------------------------------------------------
     
     report_content = f"""# Recovery Strategy & Cost-Aware Optimization Analysis
 
@@ -299,9 +293,7 @@ We tested how the optimal threshold responds to different cost environments:
         
     print("Simulation Complete. Reports and visuals generated.")
     
-    # -----------------------------------------------------
     # Test Examples
-    # -----------------------------------------------------
     print("\n--- Test Example Evaluation ---")
     opt_thresh = opt_row['threshold']
     

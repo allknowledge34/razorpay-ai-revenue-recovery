@@ -21,9 +21,7 @@ import uuid
 import pytest
 from unittest.mock import patch, MagicMock
 
-# ---------------------------------------------------------------------------
 # Fixtures
-# ---------------------------------------------------------------------------
 
 @pytest.fixture
 def valid_event():
@@ -48,7 +46,8 @@ def valid_event():
 def invalid_event():
     return {
         'payment_id': 'pay_invalid',
-        'payment_amount': -100,  # invalid
+        'payment_amount': -100,
+
         'failure_reason': 'technical_error',
         'payment_method': 'upi',
         'is_subscription': 0,
@@ -69,9 +68,6 @@ def service_no_db():
     return RecoveryInferenceService(enable_persistence=False)
 
 
-# ---------------------------------------------------------------------------
-# 1. Idempotency key resolution (unit tests — no DB)
-# ---------------------------------------------------------------------------
 
 def test_idempotency_key_caller_supplied():
     from src.db_persistence import resolve_idempotency_key
@@ -91,7 +87,8 @@ def test_idempotency_key_event_id_fallback():
 
 def test_idempotency_key_request_scoped_fallback():
     from src.db_persistence import resolve_idempotency_key
-    event = {'payment_id': 'pay_001'}  # no idempotency_key or event_id
+    event = {'payment_id': 'pay_001'}
+
     key, source = resolve_idempotency_key(event)
     assert source == 'request_scoped_fallback'
     # Must be UUID-like (at least 32 chars)
@@ -120,16 +117,14 @@ def test_caller_supplied_idempotency_key_preserved(service_no_db, valid_event):
     assert res['event_identity']['idempotency_key_source'] == 'caller_supplied'
 
 
-# ---------------------------------------------------------------------------
-# 2. Valid event inference (no DB)
-# ---------------------------------------------------------------------------
 
 def test_valid_event_succeeds_without_db(service_no_db, valid_event):
     res = service_no_db.predict_event(valid_event)
     assert res['validation']['is_valid'] is True
     assert res['processing_metadata']['status'] == 'success'
     assert 'recovery_probability' in res['prediction']
-    assert res['persistence']['persisted'] is False  # no DB
+    assert res['persistence']['persisted'] is False
+
 
 
 def test_invalid_event_rejected_without_db(service_no_db, invalid_event):
@@ -139,9 +134,6 @@ def test_invalid_event_rejected_without_db(service_no_db, invalid_event):
     assert res['processing_metadata']['error_type'] == 'validation_error'
 
 
-# ---------------------------------------------------------------------------
-# 3. Payment id preservation
-# ---------------------------------------------------------------------------
 
 def test_supplied_payment_id_preserved(service_no_db, valid_event):
     res = service_no_db.predict_event(valid_event)
@@ -155,9 +147,6 @@ def test_missing_payment_id_generates_uuid(service_no_db, valid_event):
     assert len(str(res['event_identity']['payment_id'])) >= 32
 
 
-# ---------------------------------------------------------------------------
-# 4. Pipeline exception returns safe message
-# ---------------------------------------------------------------------------
 
 def test_pipeline_exception_safe_message(service_no_db, valid_event, monkeypatch):
     def mock_predict(*args, **kwargs):
@@ -171,9 +160,6 @@ def test_pipeline_exception_safe_message(service_no_db, valid_event, monkeypatch
         'Inference pipeline failed. Please retry or inspect server logs.'
 
 
-# ---------------------------------------------------------------------------
-# 5. Database unavailable — graceful degradation
-# ---------------------------------------------------------------------------
 
 def test_db_unavailable_inference_still_works(valid_event):
     """When DB is unavailable, inference runs in stateless mode — no crash."""
@@ -198,9 +184,6 @@ def test_database_unavailable_error_is_not_exposed():
     assert "secret" not in str(err).lower()
 
 
-# ---------------------------------------------------------------------------
-# 6. is_database_available helper
-# ---------------------------------------------------------------------------
 
 def test_is_database_available_returns_false_when_no_url():
     """is_database_available must return False when DATABASE_URL is not set."""
@@ -214,9 +197,6 @@ def test_is_database_available_returns_false_when_no_url():
     assert isinstance(result, bool)  # must return bool, not raise
 
 
-# ---------------------------------------------------------------------------
-# 7. Integration tests — require TEST_DATABASE_URL
-# ---------------------------------------------------------------------------
 
 TEST_DB_URL = os.environ.get('TEST_DATABASE_URL')
 integration = pytest.mark.skipif(

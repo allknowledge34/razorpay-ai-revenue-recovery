@@ -60,7 +60,6 @@ def main():
         X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
         y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
         
-        # 1. Uncalibrated Model
         uncalib_pipe = create_pipeline()
         uncalib_pipe.fit(X_train, y_train)
         
@@ -79,7 +78,6 @@ def main():
         metrics['PR-AUC'].append(average_precision_score(y_test, y_prob_uncalib))
         metrics['Brier Score'].append(brier_score_loss(y_test, y_prob_uncalib))
         
-        # 2. Calibrated Model
         calib_clf = CalibratedClassifierCV(estimator=create_pipeline(), cv=3, method='isotonic')
         calib_clf.fit(X_train, y_train)
         

@@ -22,11 +22,9 @@ def main():
     os.makedirs('reports', exist_ok=True)
     os.makedirs('notebooks', exist_ok=True)
 
-    # 1. Load Data
     print("Loading data...")
     df = pd.read_csv('data/failed_payments.csv')
 
-    # 2. Define Features and Target
     drop_cols = ['payment_id', 'customer_id', 'recovered']
     X = df.drop(columns=drop_cols)
     y = df['recovered']
@@ -34,13 +32,11 @@ def main():
     categorical_cols = ['failure_reason', 'payment_method', 'is_subscription']
     numerical_cols = [c for c in X.columns if c not in categorical_cols]
 
-    # 3. Train-Test Split (Stratified)
     print("Splitting data...")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # 4. Preprocessing
     print("Building preprocessing pipeline...")
     preprocessor = ColumnTransformer(
         transformers=[
@@ -56,17 +52,14 @@ def main():
     cat_feature_names = preprocessor.named_transformers_['cat'].get_feature_names_out(categorical_cols)
     feature_names = numerical_cols + list(cat_feature_names)
     
-    # 5. Model 1: Logistic Regression
     print("Training Logistic Regression...")
     lr_model = LogisticRegression(max_iter=1000, random_state=42)
     lr_model.fit(X_train_processed, y_train)
 
-    # 6. Model 2: XGBoost
     print("Training XGBoost...")
     xgb_model = XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='logloss')
     xgb_model.fit(X_train_processed, y_train)
 
-    # 7. Evaluation
     print("Evaluating models...")
     def evaluate_model(model, X_test, y_test):
         preds = model.predict(X_test)
@@ -109,7 +102,6 @@ def main():
     joblib.dump(final_pipeline, model_path)
     print(f"Model saved to {model_path}")
 
-    # 8. Visualizations
     print("Generating visualizations...")
 
     # Model Comparison Plot
@@ -180,7 +172,6 @@ def main():
         plt.savefig('reports/feature_importance.png')
         plt.close()
 
-    # 9. Save Evaluation Report
     report_md = f"""# Model Evaluation Report
 
 ## Model Comparison
@@ -214,7 +205,6 @@ The SHAP analysis revealed the most influential features driving predictions for
     with open('reports/model_evaluation.md', 'w') as f:
         f.write(report_md)
 
-    # 10. Quick Prediction Test
     print("Testing saved model prediction...")
     loaded_pipeline = joblib.load(model_path)
     sample_data = X_test.iloc[:5]
