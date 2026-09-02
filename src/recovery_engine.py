@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import joblib
+from src.data_validator import DataValidator
+
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -38,30 +40,31 @@ class RecoveryEngine:
         Returns:
             dict: The prediction results including probabilities, expected revenue, and action.
         """
-        # Convert single record to DataFrame (the model pipeline expects a DataFrame)
-        df_record = pd.DataFrame([record])
-        
-        # Drop IDs if they were accidentally passed in
-        cols_to_drop = [c for c in ['payment_id', 'customer_id', 'recovered'] if c in df_record.columns]
-        if cols_to_drop:
-            df_record = df_record.drop(columns=cols_to_drop)
+        validation_result = DataValidator.validate_record(record)
+        if not validation_result.is_valid:
+            raise ValueError(f"Invalid record: {', '.join(validation_result.errors)}")
 
+        df = pd.DataFrame([record])
+        cols_to_drop = [c for c in ['payment_id', 'customer_id', 'recovered'] if c in df.columns]
+        if cols_to_drop:
+            df = df.drop(columns=cols_to_drop)
         # Predict probability
-        probability = self.model.predict_proba(df_record)[0, 1]
-        probability = float(np.clip(probability, 0.0, 1.0)) # Ensure strictly [0, 1]
+        prob = self.model.predict_proba(df)[0, 1]
         
-        payment_amount = float(record.get('payment_amount', 0))
+        prob_validation = DataValidator.validate_prediction_probability(prob)
+        if not prob_validation.is_valid:
+             raise ValueError(f"Invalid model output: {', '.join(prob_validation.errors)}")
         
-        # Expected value formula
-        expected_recovery = payment_amount * probability
+        # Calculate expected recovery
+        expected_recovery = float(record['payment_amount']) * prob
         
-        priority, action = self.get_action_and_priority(probability)
+        priority, action = self.get_action_and_priority(prob)
         
         return {
-            "recovery_probability": round(probability, 4),
-            "expected_recovery": round(expected_recovery, 2),
-            "priority": priority,
-            "recommended_action": action
+            'recovery_probability': prob,
+            'expected_recovery': expected_recovery,
+            'priority': priority,
+            'recommended_action': action
         }
 
     def predict_batch(self, input_csv: str, output_csv: str):

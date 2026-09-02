@@ -49,8 +49,8 @@ def main():
             col1, col2, col3 = st.columns(3)
             with col1:
                 payment_amount = st.number_input("Payment Amount (₹)", min_value=1.0, value=5000.0, step=100.0)
-                failure_reason = st.selectbox("Failure Reason", ["technical_error", "insufficient_funds", "invalid_card", "other"])
-                payment_method = st.selectbox("Payment Method", ["credit_card", "debit_card", "upi", "net_banking"])
+                failure_reason = st.selectbox("Failure Reason", ["technical_error", "insufficient_funds", "invalid_card", "limit_exceeded"])
+                payment_method = st.selectbox("Payment Method", ["credit_card", "debit_card", "upi", "bank_transfer"])
                 is_subscription = st.checkbox("Subscription Payment?")
             with col2:
                 customer_tenure = st.number_input("Customer Tenure (months)", min_value=0, value=12)
@@ -80,6 +80,15 @@ def main():
             }
 
             try:
+                # Validate the record explicitly so we can show user-friendly errors
+                from src.data_validator import DataValidator
+                val_result = DataValidator.validate_record(record)
+                if not val_result.is_valid:
+                    st.error("Validation Error:")
+                    for err in val_result.errors:
+                        st.warning(f"- {err}")
+                    return
+
                 res = engine.predict_recovery(record)
                 
                 st.divider()
