@@ -1,0 +1,4 @@
+cost_scenario,retry_cost,optimal_threshold,expected_net_recovery,retry_percentage
+LOW COST,10.0,0.0,6983345.395175122,100.0
+BASE COST,50.0,0.05,6218837.778953508,92.61
+HIGH COST,250.0,0.30000000000000004,3279127.399634797,59.555
