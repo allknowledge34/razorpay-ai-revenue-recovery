@@ -39,3 +39,10 @@ Upon submitting a simulation, the dashboard updates to show:
 ## Limitations
 - The explanations currently use static transparent rules rather than local SHAP computations per-prediction, ensuring blazing-fast UI response times at the expense of precise feature-importance weights per user.
 - The batch analysis uses a pre-scored cached dataset (`failed_payments_scored.csv`) for efficiency rather than re-scoring 20,000 records on every Streamlit component render.
+
+## Stage 9 Update: Strategy Simulator
+A third tab, **Strategy Simulator**, has been added to provide an interactive cost-aware decision layer. It imports the `RecoverySimulator` from `src/recovery_strategy.py` to allow business users to dynamically configure effective retry costs and test probability thresholds.
+- **Dynamic Optimization:** Sweeps across probability thresholds to identify the mathematically optimal cutoff that maximizes Expected Net Recovery under the chosen cost scenario.
+- **Strategy Comparison:** Compares Blind Retry, the Current Rule-Based strategy, and the Optimized Selective strategy side-by-side.
+- **Visuals:** Renders a threshold optimization curve and a sensitivity analysis based on low, base, and high-cost presets.
+- **Constraints:** The monetary costs and action multipliers within the simulator are configuration assumptions for testing purposes and do not represent guaranteed actual recovered revenue or Razorpay production economics.

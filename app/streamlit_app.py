@@ -3,10 +3,13 @@ import pandas as pd
 import numpy as np
 import sys
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Add root directory to path to import src
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.recovery_engine import RecoveryEngine
+from src.recovery_strategy import RecoverySimulator
 
 st.set_page_config(page_title="AI Revenue Recovery Engine", layout="wide")
 
@@ -14,18 +17,23 @@ st.set_page_config(page_title="AI Revenue Recovery Engine", layout="wide")
 def load_engine():
     return RecoveryEngine()
 
+@st.cache_resource
+def load_simulator():
+    return RecoverySimulator()
+
 def main():
     st.title("AI Revenue Recovery Engine")
     st.markdown("### Predict failed-payment recovery and prioritize the next best recovery action.")
     
     try:
         engine = load_engine()
+        simulator = load_simulator()
     except Exception as e:
-        st.error(f"Failed to load the Recovery Engine. Make sure the model exists. Error: {e}")
+        st.error(f"Failed to load the Recovery Engine or Simulator. Error: {e}")
         return
 
-    # Create tabs for Single Payment Simulation and Batch Analysis
-    tab1, tab2 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis"])
+    # Create tabs
+    tab1, tab2, tab3 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator"])
 
     with tab1:
         st.header("Payment Simulation")
@@ -149,6 +157,125 @@ def main():
             
         except Exception as e:
             st.error(f"Could not load batch data. Error: {e}")
+
+    with tab3:
+        st.header("Cost-Aware Strategy Simulator")
+        st.markdown("""
+        **How the simulator decides:**  
+        The simulator selects a retry threshold that maximizes expected net recovery under the selected cost assumption.  
+        *(Recovery Probability → Expected Recovery → Action Cost → Expected Net Recovery → Optimal Retry Threshold)*
+        """)
+        st.caption("Simulation assumptions — not actual Razorpay production economics.")
+
+        # Sidebar / Controls
+        st.sidebar.header("Simulator Controls")
+        
+        # Presets
+        preset = st.sidebar.selectbox("Cost Scenario Presets", ["Custom", "Low Cost (₹10)", "Base Cost (₹50)", "High Cost (₹250)"], index=2)
+        
+        default_cost = 50.0
+        if preset == "Low Cost (₹10)":
+            default_cost = 10.0
+        elif preset == "Base Cost (₹50)":
+            default_cost = 50.0
+        elif preset == "High Cost (₹250)":
+            default_cost = 250.0
+
+        effective_cost = st.sidebar.number_input("Effective Retry Cost (₹)", min_value=0.0, max_value=1000.0, value=default_cost, step=5.0)
+        
+        # Calculate optimal threshold for current effective cost
+        df_sweep, opt_row = simulator.threshold_sweep(effective_cost)
+        optimal_threshold = opt_row['threshold']
+        
+        threshold = st.sidebar.slider("Probability Threshold", min_value=0.0, max_value=1.0, value=float(optimal_threshold), step=0.01)
+        
+        # Live Selective Strategy Calculation
+        strat_c = simulator.evaluate_strategy_c_selective(threshold, effective_cost)
+        strat_a = simulator.evaluate_strategy_a_blind_retry()
+        # Ensure we pass the updated effective cost to strategy B calculation? 
+        # Strategy A and B use simulator.costs internally, which hasn't been updated dynamically by the slider. 
+        # Let's temporarily override simulator costs for live calculation so it perfectly matches.
+        orig_retry_cost = simulator.costs['retry_cost']
+        orig_friction_cost = simulator.costs['customer_friction_cost']
+        
+        # We assign the whole effective_cost to retry_cost and 0 to friction for A and B calculation
+        simulator.costs['retry_cost'] = effective_cost
+        simulator.costs['customer_friction_cost'] = 0.0
+        
+        strat_a = simulator.evaluate_strategy_a_blind_retry()
+        strat_b = simulator.evaluate_strategy_b_rule_based()
+        
+        # Restore simulator costs
+        simulator.costs['retry_cost'] = orig_retry_cost
+        simulator.costs['customer_friction_cost'] = orig_friction_cost
+        
+        # Key Business Metrics
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Expected Net Recovery", f"₹{strat_c['expected_net_recovery']:,.2f}", 
+                  f"{(strat_c['expected_net_recovery'] - strat_a['expected_net_recovery']):,.2f} vs Blind")
+        k2.metric("Expected Gross Recovery", f"₹{strat_c['expected_recovery']:,.2f}")
+        k3.metric("Retry Rate", f"{strat_c['retry_percentage']:.1f}%", 
+                  f"{strat_c['retry_percentage'] - 100.0:.1f}% vs Blind")
+        k4.metric("Action Cost", f"₹{strat_c['recovery_cost']:,.2f}")
+        
+        st.divider()
+        
+        # Compare Three Strategies
+        st.subheader("Strategy Comparison")
+        
+        compare_data = [
+            {"Strategy": "Blind Retry", "Retry %": f"{strat_a['retry_percentage']:.1f}%", 
+             "Expected Recovery": f"₹{strat_a['expected_recovery']:,.2f}", 
+             "Action Cost": f"₹{strat_a['action_cost']:,.2f}", 
+             "Expected Net Recovery": f"₹{strat_a['expected_net_recovery']:,.2f}"},
+             
+            {"Strategy": "Current Rule-Based", "Retry %": f"{strat_b['retry_percentage']:.1f}%", 
+             "Expected Recovery": f"₹{strat_b['expected_recovery']:,.2f}", 
+             "Action Cost": f"₹{strat_b['action_cost']:,.2f}", 
+             "Expected Net Recovery": f"₹{strat_b['expected_net_recovery']:,.2f}"},
+             
+            {"Strategy": "Selective Recovery", "Retry %": f"{strat_c['retry_percentage']:.1f}%", 
+             "Expected Recovery": f"₹{strat_c['expected_recovery']:,.2f}", 
+             "Action Cost": f"₹{strat_c['recovery_cost']:,.2f}", 
+             "Expected Net Recovery": f"₹{strat_c['expected_net_recovery']:,.2f}"}
+        ]
+        
+        st.table(pd.DataFrame(compare_data).set_index("Strategy"))
+        
+        st.divider()
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.subheader("Threshold Optimization Curve")
+            fig, ax = plt.subplots(figsize=(8, 5))
+            ax.plot(df_sweep['threshold'], df_sweep['expected_net_recovery'], marker='.', lw=2, color='royalblue')
+            ax.axvline(x=optimal_threshold, color='green', linestyle='--', label=f"Optimal: {optimal_threshold:.2f}")
+            ax.axvline(x=threshold, color='red', linestyle=':', label=f"Selected: {threshold:.2f}")
+            ax.set_title("Probability Threshold vs Expected Net Recovery")
+            ax.set_xlabel("Probability Threshold")
+            ax.set_ylabel("Expected Net Recovery (₹)")
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            st.pyplot(fig)
+            
+        with c2:
+            st.subheader("Cost Sensitivity Presets")
+            st.markdown("Optimal thresholds recalculate dynamically based on action costs.")
+            
+            # Use threshold_sweep dynamically
+            _, low_row = simulator.threshold_sweep(10.0)
+            _, base_row = simulator.threshold_sweep(50.0)
+            _, high_row = simulator.threshold_sweep(250.0)
+            
+            sens_data = [
+                {"Cost Scenario": "Low Cost (₹10)", "Optimal Threshold": f"{low_row['threshold']:.2f}", 
+                 "Retry %": f"{low_row['retry_percentage']:.1f}%", "Net Recovery": f"₹{low_row['expected_net_recovery']:,.2f}"},
+                {"Cost Scenario": "Base Cost (₹50)", "Optimal Threshold": f"{base_row['threshold']:.2f}", 
+                 "Retry %": f"{base_row['retry_percentage']:.1f}%", "Net Recovery": f"₹{base_row['expected_net_recovery']:,.2f}"},
+                {"Cost Scenario": "High Cost (₹250)", "Optimal Threshold": f"{high_row['threshold']:.2f}", 
+                 "Retry %": f"{high_row['retry_percentage']:.1f}%", "Net Recovery": f"₹{high_row['expected_net_recovery']:,.2f}"}
+            ]
+            st.table(pd.DataFrame(sens_data).set_index("Cost Scenario"))
 
 if __name__ == "__main__":
     main()

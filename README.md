@@ -167,6 +167,9 @@ python3 src/validate_dataset.py
 - **Stage 4:** Model Training, Tuning, & Evaluation *(Completed)*
 - **Stage 5:** SHAP Integration & Recovery Logic *(Completed)*
 - **Stage 6:** Streamlit Dashboard Implementation *(Completed)*
+- **Stage 7:** Probability Calibration & Robust Model Evaluation *(Completed)*
+- **Stage 8:** Cost-Aware Recovery Strategy Optimization *(Completed)*
+- **Stage 9:** Interactive Strategy Simulator Integration *(Completed)*
 
 ## Limitations
 - **Synthetic Data:** The relationships in the data are simulated based on logical assumptions, not real-world merchant telemetry.
