@@ -40,7 +40,7 @@ def main():
         return
 
     # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring", "Outcome Simulation"])
 
     with tab1:
         st.header("Payment Simulation")
@@ -358,6 +358,73 @@ def main():
         except Exception as e:
             st.error(f"Failed to load monitoring module: {str(e)}")
 
+
+
+    with tab5:
+        st.header("Synthetic Outcome Simulation — Not Real Payment Execution")
+        st.info("Disclaimer: This is a synthetic simulation of recovery outcomes based on assumed action effectiveness and costs. It does not represent actual Razorpay recovery execution, real customer behavior, or real payment processing.")
+        
+        try:
+            from src.outcome_simulator import OutcomeSimulator
+            
+            st.markdown("### Methodology")
+            st.write("Model Probability → Action Effectiveness → Synthetic Outcome → Revenue → Cost → Net Impact")
+            st.write("We evaluate the recovery strategy on the existing synthetic scored dataset using a fixed deterministic seed (42).")
+            
+            if st.button("Run Closed-Loop Simulation"):
+                with st.spinner("Simulating deterministic outcomes..."):
+                    outcome_sim = OutcomeSimulator(seed=42)
+                    strategies = ["Blind Retry", "Current Rule-Based Strategy", "Optimized Selective Strategy"]
+                    
+                    metrics_list = []
+                    for strat in strategies:
+                        df_sim = outcome_sim.simulate_strategy(strat)
+                        metrics_list.append(outcome_sim.calculate_metrics(df_sim, strat))
+                        
+                    df_metrics = pd.DataFrame(metrics_list)
+                    
+                    st.subheader("Strategy Comparison (Aggregate Business Impact)")
+                    
+                    # Display the metrics beautifully
+                    display_cols = [
+                        'strategy', 'simulated_recovery_rate', 'gross_simulated_recovered_revenue', 
+                        'total_action_cost', 'net_recovered_revenue', 'roi',
+                        'recovery_cost_per_recovered_payment', 'retry_count', 'reminder_count', 'manual_review_count'
+                    ]
+                    
+                    df_display = df_metrics[display_cols].copy()
+                    # Formatting
+                    df_display['simulated_recovery_rate'] = df_display['simulated_recovery_rate'].map("{:.1%}".format)
+                    df_display['gross_simulated_recovered_revenue'] = df_display['gross_simulated_recovered_revenue'].map("₹{:,.2f}".format)
+                    df_display['total_action_cost'] = df_display['total_action_cost'].map("₹{:,.2f}".format)
+                    df_display['net_recovered_revenue'] = df_display['net_recovered_revenue'].map("₹{:,.2f}".format)
+                    df_display['roi'] = df_display['roi'].map("{:.2f}x".format)
+                    df_display['recovery_cost_per_recovered_payment'] = df_display['recovery_cost_per_recovered_payment'].map("₹{:,.2f}".format)
+                    
+                    st.dataframe(df_display.set_index('strategy'), use_container_width=True)
+                    
+                    # Visualizations
+                    st.subheader("Simulated Net Recovered Revenue by Strategy")
+                    fig, ax = plt.subplots(figsize=(10, 5))
+                    
+                    strategies = df_metrics['strategy'].tolist()
+                    net_rev = df_metrics['net_recovered_revenue'].tolist()
+                    
+                    ax.bar(strategies, net_rev, color=['#440154', '#21918c', '#fde725'])
+                    ax.set_title("Simulated Net Recovered Revenue")
+                    ax.set_ylabel("Amount (₹)")
+                    st.pyplot(fig)
+                    
+                    st.subheader("Simulated ROI by Strategy")
+                    fig2, ax2 = plt.subplots(figsize=(10, 5))
+                    roi_vals = df_metrics['roi'].tolist()
+                    ax2.bar(strategies, roi_vals, color=['#0d0887', '#cc4678', '#f0f921'])
+                    ax2.set_title("Simulated Return on Investment (ROI)")
+                    ax2.set_ylabel("ROI Multiple")
+                    st.pyplot(fig2)
+                    
+        except Exception as e:
+            st.error(f"Failed to load Outcome Simulator: {str(e)}")
 
 if __name__ == "__main__":
     main()
