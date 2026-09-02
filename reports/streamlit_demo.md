@@ -46,3 +46,13 @@ A third tab, **Strategy Simulator**, has been added to provide an interactive co
 - **Strategy Comparison:** Compares Blind Retry, the Current Rule-Based strategy, and the Optimized Selective strategy side-by-side.
 - **Visuals:** Renders a threshold optimization curve and a sensitivity analysis based on low, base, and high-cost presets.
 - **Constraints:** The monetary costs and action multipliers within the simulator are configuration assumptions for testing purposes and do not represent guaranteed actual recovered revenue or Razorpay production economics.
+
+## Stage 10 Update: Decision Trace & Explainability
+To provide transparency into how the AI Revenue Recovery Engine arrives at its recommendations, a **Decision Trace** section has been added to the Single Payment Simulation tab.
+- **Model Estimate:** Displays the raw recovery probability and the expected monetary recovery.
+- **Threshold Comparison:** Compares the probability against the configuration threshold to determine if action is justified.
+- **Economic Reasoning:** Generates a dynamic, human-readable explanation articulating exactly why the chosen action is economically sound (e.g., comparing expected recoverable amount vs. effective retry cost).
+- **Key Input Factors:** Lists the actual transaction parameters (e.g., historical success rate, days overdue) that were fed into the model.
+
+**Limitations of Explainability:**
+The decision explanations describe model estimates and configured business rules. They are **not causal explanations** (i.e., changing a feature does not guarantee a different real-world outcome) and do not guarantee successful recovery. Features evaluated are simply inputs to a statistical correlation model. Furthermore, cost and action-effectiveness values are simulation assumptions, not actual Razorpay production economics. SHAP (SHapley Additive exPlanations) was intentionally excluded in this iteration to prioritize robust, rule-based economic logic over complex attribution scores that could destabilize the application.

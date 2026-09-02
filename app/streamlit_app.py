@@ -10,6 +10,7 @@ import seaborn as sns
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.recovery_engine import RecoveryEngine
 from src.recovery_strategy import RecoverySimulator
+from src.decision_trace import DecisionTracer
 
 st.set_page_config(page_title="AI Revenue Recovery Engine", layout="wide")
 
@@ -21,6 +22,11 @@ def load_engine():
 def load_simulator():
     return RecoverySimulator()
 
+
+@st.cache_resource
+def load_tracer():
+    return DecisionTracer(simulator_cost=50.0, simulator_threshold=0.05)
+
 def main():
     st.title("AI Revenue Recovery Engine")
     st.markdown("### Predict failed-payment recovery and prioritize the next best recovery action.")
@@ -28,6 +34,7 @@ def main():
     try:
         engine = load_engine()
         simulator = load_simulator()
+        tracer = load_tracer()
     except Exception as e:
         st.error(f"Failed to load the Recovery Engine or Simulator. Error: {e}")
         return
@@ -84,25 +91,39 @@ def main():
                 m2.metric("Expected Recovery", f"₹{res['expected_recovery']:,.2f}")
                 m3.metric("Priority", res['priority'])
                 m4.metric("Recommended Action", res['recommended_action'])
-                
                 st.divider()
+                st.subheader("Decision Trace")
+                trace = tracer.generate_trace(record, res)
                 
-                col_exp, col_biz = st.columns(2)
+                dt1, dt2, dt3, dt4 = st.columns(4)
+                dt1.markdown("**Model Estimate**")
+                dt1.write(f"Recovery Prob: {trace['recovery_probability']*100:.1f}%")
+                dt1.write(f"Expected: ₹{trace['expected_recovery']:,.2f}")
                 
-                with col_exp:
-                    st.subheader("Why this recommendation?")
-                    st.markdown(f"- **Historical Success:** A rate of {hist_success_rate*100:.0f}% heavily influences the recovery likelihood.")
-                    st.markdown(f"- **Failure Reason:** `{failure_reason}` failures typically exhibit specific operational recovery patterns.")
-                    st.markdown(f"- **Age:** The payment is {days_overdue} days overdue, and {recovery_attempts} attempts have been made, which strongly dictates the urgency.")
-                    st.markdown("- **Formula:** `Expected Recovery = Payment Amount × Recovery Probability`")
+                dt2.markdown("**Strategy Simulator Boundary**")
+                dt2.write(f"Hypothetical Threshold: {trace['selected_threshold']*100:.1f}%")
+                exceeds = "YES" if trace['recovery_probability'] >= trace['selected_threshold'] else "NO"
+                dt2.write(f"Exceeds Threshold: {exceeds}")
+                
+                dt3.markdown("**Hypothetical Retry Economics**")
+                dt3.write(f"Amount: ₹{trace['payment_amount']:,.2f}")
+                dt3.write(f"Retry Cost: ₹{trace['effective_retry_cost']:,.2f}")
+                dt3.write(f"Net Retry Value: ₹{trace['expected_retry_net_value']:,.2f}")
+                
+                dt4.markdown("**Stage 5 Decision**")
+                dt4.write(f"**{trace['recommended_action']}**")
+                
+                st.markdown("**Why?**")
+                st.info(trace['decision_reason'])
+                
+                with st.expander("Key Input Factors Considered"):
+                    for factor in trace['key_input_factors']:
+                        st.write(f"- {factor}")
+                        
+                st.caption("Decision explanations describe model estimates and configured business rules. They are not causal explanations and do not guarantee successful recovery. Cost and action-effectiveness values are simulation assumptions, not actual Razorpay production economics.")
 
-                with col_biz:
-                    st.subheader("Business Impact")
-                    unrecovered = payment_amount - res['expected_recovery']
-                    b1, b2, b3 = st.columns(3)
-                    b1.metric("Payment At Risk", f"₹{payment_amount:,.2f}")
-                    b2.metric("Expected Recoverable Revenue", f"₹{res['expected_recovery']:,.2f}")
-                    b3.metric("Potentially Unrecovered Amount", f"₹{unrecovered:,.2f}")
+
+
                     
             except Exception as e:
                 st.error(f"Error making prediction: {e}")

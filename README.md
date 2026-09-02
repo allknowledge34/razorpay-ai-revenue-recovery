@@ -183,3 +183,5 @@ To launch the interactive demo application, run:
 ```bash
 streamlit run app/streamlit_app.py
 ```
+
+- **Stage 10:** Explainability & Decision Trace *(Completed)*
