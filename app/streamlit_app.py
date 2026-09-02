@@ -40,7 +40,7 @@ def main():
         return
 
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring", "Outcome Simulation", "Audit Trail"])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring", "Outcome Simulation", "Audit Trail", "Real-Time Inference Demo"])
 
     with tab1:
         st.header("Payment Simulation")
@@ -496,6 +496,72 @@ def main():
                         st.rerun()
         except Exception as e:
             st.error(f"Failed to load Audit Trail: {str(e)}")
+
+
+    with tab7:
+        st.header("Real-Time Inference Demo")
+        st.info("Disclaimer: This is a local synchronous inference demonstration, not a real payment execution system. It processes ONE event through the inference pipeline (Validation -> Prediction -> Decision -> Explanation).")
+        
+        try:
+            from src.inference_service import RecoveryInferenceService
+            service = RecoveryInferenceService()
+            
+            st.subheader("Simulate Incoming Event")
+            
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                amt = st.number_input("Payment Amount", min_value=1.0, value=5000.0, key='rt_amt')
+                is_sub = st.selectbox("Is Subscription?", [0, 1], key='rt_is_sub')
+                pm = st.selectbox("Payment Method", ["credit_card", "debit_card", "upi", "bank_transfer"], key='rt_pm')
+                fr = st.selectbox("Failure Reason", ["insufficient_funds", "invalid_card", "technical_error", "limit_exceeded"], key='rt_fr')
+            with c2:
+                tenure = st.number_input("Customer Tenure (months)", min_value=0, value=12, key='rt_tenure')
+                successes = st.number_input("Past Successful Payments", min_value=0, value=10, key='rt_succ')
+                fails = st.number_input("Past Failed Payments", min_value=0, value=0, key='rt_fail')
+                rate = st.number_input("Historical Success Rate", min_value=0.0, max_value=1.0, value=1.0, key='rt_rate')
+            with c3:
+                last_succ = st.number_input("Days Since Last Success", min_value=0, value=5, key='rt_last_succ')
+                overdue = st.number_input("Days Overdue", min_value=0, value=1, key='rt_overdue')
+                attempts = st.number_input("Recovery Attempts So Far", min_value=0, value=0, key='rt_attempts')
+            
+            if st.button("Submit Event"):
+                with st.spinner("Processing event..."):
+                    event = {
+                        "payment_id": "rt_test_001",
+                        "payment_amount": amt,
+                        "is_subscription": is_sub,
+                        "payment_method": pm,
+                        "failure_reason": fr,
+                        "customer_tenure_months": tenure,
+                        "past_successful_payments": successes,
+                        "past_failed_payments": fails,
+                        "historical_success_rate": rate,
+                        "time_since_last_success_days": last_succ,
+                        "days_overdue": overdue,
+                        "recovery_attempts_so_far": attempts
+                    }
+                    
+                    res = service.predict_event(event)
+                    
+                    if res['processing_metadata']['status'] == 'error':
+                        st.error(f"Inference failed ({res['processing_metadata']['processing_time_ms']}ms)")
+                        st.json(res['validation']['errors'] if res['validation']['errors'] else res['processing_metadata'])
+                    else:
+                        st.success(f"Inference complete in {res['processing_metadata']['processing_time_ms']}ms")
+                        
+                        met1, met2, met3 = st.columns(3)
+                        met1.metric("Recovery Probability", f"{res['prediction']['recovery_probability']:.2%}")
+                        met2.metric("Expected Recovery", f"₹{res['economic_estimate']['expected_recovery']:,.2f}")
+                        met3.metric("Recommended Action", res['decision']['recommended_action'])
+                        
+                        st.write("**Decision Explanation:**")
+                        st.info(res['explanation']['decision_reason'])
+                        
+                        with st.expander("View Full Inference Response Payload"):
+                            st.json(res)
+                            
+        except Exception as e:
+            st.error(f"Failed to load Inference Service: {str(e)}")
 
 if __name__ == "__main__":
     main()
