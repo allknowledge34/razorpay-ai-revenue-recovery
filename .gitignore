@@ -36,3 +36,4 @@ logs/
 # Explicitly track data directory
 !data/
 !data/failed_payments.csv
+!models/revenue_recovery_model.joblib

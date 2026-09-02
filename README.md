@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python">
   <img src="https://img.shields.io/badge/Pandas-Data_Processing-150458.svg?logo=pandas" alt="Pandas">
   <img src="https://img.shields.io/badge/Scikit--Learn-Machine_Learning-F7931E.svg?logo=scikit-learn" alt="Scikit-Learn">
-  <img src="https://img.shields.io/badge/LightGBM-Gradient_Boosting-4479A1.svg" alt="LightGBM">
+  <img src="https://img.shields.io/badge/XGBoost-Gradient_Boosting-4479A1.svg" alt="XGBoost">
   <img src="https://img.shields.io/badge/SHAP-Explainability-8A2BE2.svg" alt="SHAP">
   <img src="https://img.shields.io/badge/Streamlit-UI_(Planned)-FF4B4B.svg?logo=streamlit" alt="Streamlit">
 </p>
@@ -40,7 +40,7 @@ graph TD
     C --> D(Feature Engineering)
     D --> E(Train / Validation / Test Split)
     E --> F[Baseline Model]
-    E --> G[LightGBM / XGBoost]
+    E --> G[XGBoost]
     F -.-> H(Model Comparison)
     G -.-> H
     H --> I(Model Evaluation)
@@ -83,7 +83,7 @@ Preventing target leakage is critical in this project. The dataset and features 
 ## Planned Model Approach
 The core models will utilize tree-based gradient boosting frameworks, specifically:
 - **Baseline:** Logistic Regression or a simple Decision Tree to establish a performance floor.
-- **Primary Candidates:** **LightGBM** and **XGBoost**. These models handle tabular data efficiently, capture non-linear relationships, and manage categorical features well without exhaustive one-hot encoding.
+- **Primary Candidates:** **Logistic Regression** and **XGBoost**. These models handle tabular data efficiently, capture non-linear relationships, and manage categorical features well without exhaustive one-hot encoding.
 - **Calibration:** Predictions will be calibrated (e.g., Isotonic Regression or Platt Scaling) to ensure outputs represent true probabilities rather than arbitrary scores.
 
 ## Planned Evaluation Metrics
@@ -115,11 +115,11 @@ Machine learning decisions in finance must be explainable. The project will inte
 | **Data Generation** | ✅ Completed | Synthetic dataset generator with realistic noise and logic. |
 | **Data Validation** | ✅ Completed | Script for missing values, leakage checks, and class distribution. |
 | **Data Dictionary** | ✅ Completed | Comprehensive documentation of features and logic. |
-| **EDA** | ⏳ Planned | Exploratory Data Analysis notebooks. |
-| **Feature Engineering** | ⏳ Planned | Data preprocessing and scaling. |
-| **Model Training** | ⏳ Planned | Training and tuning LightGBM / XGBoost. |
-| **Model Evaluation** | ⏳ Planned | Calculating AUC and calibrating probabilities. |
-| **SHAP Integration** | ⏳ Planned | Global and local explainability. |
+| **EDA** | ✅ Completed | Exploratory Data Analysis notebooks. |
+| **Feature Engineering** | ✅ Completed | Data preprocessing and scaling. |
+| **Model Training** | ✅ Completed | Training and tuning Logistic Regression and XGBoost. |
+| **Model Evaluation** | ✅ Completed | Calculating AUC and calibrating probabilities. |
+| **SHAP Integration** | ✅ Completed | Global and local explainability. |
 | **Streamlit Dashboard** | ⏳ Planned | Interactive UI for demonstrating the model. |
 
 ## Repository Structure
@@ -145,7 +145,7 @@ Machine learning decisions in finance must be explainable. The project will inte
 - **Python:** Core language
 - **Pandas & NumPy:** Data manipulation
 - **Scikit-learn:** ML utilities, metrics, baselines
-- **LightGBM & XGBoost:** Advanced predictive modeling
+- **Logistic Regression & XGBoost:** Advanced predictive modeling
 - **SHAP:** Model explainability
 - **Matplotlib & Seaborn:** Visualizations
 - **Streamlit:** Interactive web interface (Planned)
@@ -163,8 +163,8 @@ python3 src/validate_dataset.py
 
 ## Development Roadmap
 - **Stage 1 & 2:** Project Foundation & Dataset Design *(Completed)*
-- **Stage 3:** Exploratory Data Analysis & Preprocessing *(Next)*
-- **Stage 4:** Model Training, Tuning, & Evaluation
+- **Stage 3:** Exploratory Data Analysis & Preprocessing *(Completed)*
+- **Stage 4:** Model Training, Tuning, & Evaluation *(Completed)*
 - **Stage 5:** SHAP Integration & Recovery Logic
 - **Stage 6:** Streamlit Dashboard Implementation
 
