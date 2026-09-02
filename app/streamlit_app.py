@@ -40,7 +40,7 @@ def main():
         return
 
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring", "Outcome Simulation"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator", "Monitoring", "Outcome Simulation", "Audit Trail"])
 
     with tab1:
         st.header("Payment Simulation")
@@ -310,7 +310,7 @@ def main():
 
     with tab4:
         st.header("Synthetic / Offline Monitoring")
-        st.info("Disclaimer: This is a synthetic/offline monitoring framework demonstrated using synthetic data. It does not represent real-time monitoring, real customer data, real Razorpay metrics, or production model degradation.")
+        st.info("Disclaimer: This is a synthetic/offline monitoring framework demonstrated using synthetic data. It does not represent interactive monitoring, real customer data, real Razorpay metrics, or production model degradation.")
         
         try:
             from src.monitoring import MonitoringEngine
@@ -425,6 +425,77 @@ def main():
                     
         except Exception as e:
             st.error(f"Failed to load Outcome Simulator: {str(e)}")
+
+
+    with tab6:
+        st.header("Recovery Decision Audit Trail")
+        st.info("Disclaimer: Audit timestamps represent audit record generation time, not payment execution time. This is an AUDITABILITY layer, not real payment execution. The displayed audit history is loaded from the locally generated audit artifact. All model predictions and simulated outcomes are based on synthetic data and do not represent real Razorpay transactions.")
+        
+        try:
+            from src.audit_trail import AuditTrail
+            import os
+            
+            audit_file = 'reports/recovery_audit_trail.csv'
+            
+            if os.path.exists(audit_file):
+                df_audit = pd.read_csv(audit_file)
+                st.success(f"Loaded {len(df_audit)} audit records.")
+                
+                # Filters
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    actions = ["All"] + list(df_audit['recommended_action'].unique())
+                    filter_action = st.selectbox("Filter by Recommended Action", actions)
+                with col2:
+                    priorities = ["All"] + list(df_audit['recovery_priority'].unique())
+                    filter_priority = st.selectbox("Filter by Priority", priorities)
+                with col3:
+                    strategies = ["All"] + list(df_audit['strategy_name'].unique())
+                    filter_strategy = st.selectbox("Filter by Strategy", strategies)
+                
+                df_filtered = df_audit.copy()
+                if filter_action != "All":
+                    df_filtered = df_filtered[df_filtered['recommended_action'] == filter_action]
+                if filter_priority != "All":
+                    df_filtered = df_filtered[df_filtered['recovery_priority'] == filter_priority]
+                if filter_strategy != "All":
+                    df_filtered = df_filtered[df_filtered['strategy_name'] == filter_strategy]
+                    
+                st.write(f"Showing {len(df_filtered)} records.")
+                st.dataframe(df_filtered)
+                
+                # Summary metrics
+                auditor = AuditTrail()
+                summary = auditor.summarize_audit_history(df_filtered)
+                
+                st.subheader("Audit Summary")
+                met1, met2, met3 = st.columns(3)
+                met1.metric("Total Decisions", summary['total_audit_records'])
+                met2.metric("Average Model Probability", f"{summary['average_model_probability']:.1%}")
+                met3.metric("Total Expected Recovery", f"₹{summary['total_expected_recovery']:,.2f}")
+                
+                if summary.get('simulated_recovery_count') is not None:
+                    st.subheader("Simulated Outcome Summary")
+                    met4, met5, met6 = st.columns(3)
+                    met4.metric("Simulated Recoveries", summary['simulated_recovery_count'])
+                    met5.metric("Simulated Recovered Revenue", f"₹{summary['simulated_recovered_revenue']:,.2f}")
+                    met6.metric("Simulated Net Recovered Revenue", f"₹{summary['simulated_net_recovered_revenue']:,.2f}")
+                    
+            else:
+                st.warning("No audit trail found. The displayed audit history is loaded from the locally generated audit artifact. Please run the Outcome Simulation to generate audit records.")
+                st.info("Note: Generating a default audit trail creates a new local synthetic audit artifact from the deterministic outcome simulation.")
+                if st.button("Generate Default Audit Trail"):
+                    with st.spinner("Generating..."):
+                        from src.outcome_simulator import OutcomeSimulator
+                        sim = OutcomeSimulator(seed=42)
+                        df_sim = sim.simulate_strategy("Optimized Selective Strategy")
+                        auditor = AuditTrail()
+                        df_audit = auditor.create_from_dataframe(df_sim, strategy_name="Optimized Selective Strategy")
+                        auditor.export_audit_records(df_audit, audit_file)
+                        st.success("Generated default audit trail. Refreshing...")
+                        st.rerun()
+        except Exception as e:
+            st.error(f"Failed to load Audit Trail: {str(e)}")
 
 if __name__ == "__main__":
     main()
