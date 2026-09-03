@@ -657,3 +657,31 @@ if __name__ == "__main__":
                     st.info("The Bounded Recovery Orchestrator rigidly enforces business guardrails (e.g. Max Attempts), which safely suppresses action costs and prevents unbounded retries, demonstrating configurable recovery limits in this synthetic simulation.")
                 except Exception as e:
                     st.error(f"Benchmark failed: {str(e)}")
+
+    with tab10:
+        st.header("Recovery Prioritization Queue")
+        st.info("Prioritization determines queue order; bounded recovery policy still controls whether an action is allowed. (ML Inference -> Recovery Probability -> Prioritization Layer -> Priority Queue -> Recovery Orchestrator)")
+        try:
+            from src.domain.prioritization import RecoveryPrioritizer
+            prioritizer = RecoveryPrioritizer()
+            df_scored = pd.read_csv('data/failed_payments_scored.csv')
+            df_prioritized = prioritizer.batch_prioritize(df_scored)
+            
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Total Payments", f"{len(df_prioritized):,}")
+            c2.metric("Revenue at Risk", f"₹{df_prioritized['payment_amount'].sum():,.2f}")
+            c3.metric("Base Expected", f"₹{df_prioritized['base_expected_recovery'].sum():,.2f}")
+            c4.metric("Business Adjusted", f"₹{df_prioritized['business_adjusted_expected_recovery'].sum():,.2f}")
+            
+            st.subheader("Tier Distribution")
+            st.bar_chart(df_prioritized['priority_tier'].value_counts())
+            
+            st.subheader("Top Prioritized Recovery Opportunities")
+            st.dataframe(df_prioritized[[
+                'priority_rank', 'priority_tier', 'payment_id', 'priority_value', 
+                'payment_amount', 'recovery_probability', 'is_subscription', 'priority_explanation'
+            ]].head(100))
+            
+            st.caption("The priority value is a business-value ranking derived from model-estimated recovery probability and synthetic economic assumptions. It is not a causal risk score or a guarantee of recovered revenue.")
+        except Exception as e:
+            st.error(f"Error loading prioritization logic: {e}")
