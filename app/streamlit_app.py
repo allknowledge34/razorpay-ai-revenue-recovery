@@ -40,10 +40,11 @@ def main():
         return
 
     # Create tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
         "Single Payment Simulation", "Batch Recovery Analysis", "Strategy Simulator",
         "Monitoring", "Outcome Simulation", "Audit Trail",
-        "Real-Time Inference Demo", "PostgreSQL Status"
+        "Real-Time Inference Demo", "PostgreSQL Status",
+        "Benchmark"
     ])
 
 
@@ -630,3 +631,29 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    with tab9:
+        st.header("Batch Recovery Benchmark")
+        st.warning("Benchmark results are generated from the project's synthetic payment dataset and simulation assumptions. They do not represent real Razorpay recovery performance.")
+        
+        if st.button("Run Batch Benchmark", key="run_benchmark_btn"):
+            with st.spinner("Evaluating strategies on 20,000 synthetic payments..."):
+                try:
+                    from src.ml.evaluation.recovery_benchmark import RecoveryBenchmark
+                    bench = RecoveryBenchmark()
+                    df_bench = bench.evaluate_all()
+                    
+                    st.subheader("Strategy Comparison")
+                    st.dataframe(
+                        df_bench[['Strategy', 'Net Recovered Revenue', 'Recovery Rate', 'Action Cost', 'ROI', 'Recovery Efficiency', 'Retry Count', 'Manual Review Count', 'Stopped Count']].style.format({
+                            'Net Recovered Revenue': '₹{:,.2f}',
+                            'Action Cost': '₹{:,.2f}',
+                            'Recovery Rate': '{:.2%}',
+                            'ROI': '{:.2f}',
+                            'Recovery Efficiency': '{:.2%}'
+                        })
+                    )
+                    
+                    st.info("The Bounded Recovery Orchestrator rigidly enforces business guardrails (e.g. Max Attempts), which safely suppresses action costs and prevents unbounded retries, demonstrating configurable recovery limits in this synthetic simulation.")
+                except Exception as e:
+                    st.error(f"Benchmark failed: {str(e)}")

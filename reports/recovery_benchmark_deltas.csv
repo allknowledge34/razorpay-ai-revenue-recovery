@@ -1,0 +1,5 @@
+Comparison,Net Recovered Revenue Delta,Recovery Rate Delta,Action Cost Delta,Retry Count Delta,ROI Delta
+C. Optimized Selective vs A. Blind Retry,31180.75,-0.0023500000000000187,-73900.0,-1478.0,0.5214103461213693
+D. Bounded Recovery Orchestrator vs A. Blind Retry,-3234963.2699999902,-0.24625000000000002,-818085.0,-16418.0,9.704532228356392
+D. Bounded Recovery Orchestrator vs B. Current Rule-Based,-1660627.1299999952,-0.1053,-98038.0,-1909.0,-0.3928468441428805
+D. Bounded Recovery Orchestrator vs C. Optimized Selective,-3266144.0199999902,-0.2439,-744185.0,-14940.0,9.183121882235023
