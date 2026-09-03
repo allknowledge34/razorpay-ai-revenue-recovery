@@ -1,382 +1,420 @@
-
 <div align="center">
-  <img src="https://razorpay.com/favicon.ico" alt="Razorpay" width="80" height="80">
 
-  # AI Revenue Recovery Engine
+# AI Revenue Recovery Engine
 
-  **Track 03 — AI Revenue Recovery | Razorpay AI Buildathon 2026**
+<p><b>Predicting failed-payment recovery probability, selecting economically viable recovery actions, and prioritizing the highest-value recovery opportunities.</b></p>
+<p>Razorpay AI Builder Challenge<br>Track 03 — AI Revenue Recovery · 2026</p>
 
-  *An intelligent, cost-aware machine learning engine to optimize failed payment recovery.*
+<br>
 
-  [![Python](https://img.shields.io/badge/Python-3.13.7-blue.svg)](https://python.org)
-  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791.svg)](https://neon.tech)
-  [![Streamlit](https://img.shields.io/badge/Streamlit-UI-FF4B4B.svg)](https://streamlit.io)
-  [![Build Status](https://img.shields.io/badge/Tests-90_Passed_|_6_Skipped-brightgreen.svg)]()
-  [![License](https://img.shields.io/badge/License-MIT-green.svg)]()
+<img src="https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python" alt="Python">
+<img src="https://img.shields.io/badge/Streamlit-Native-red?style=flat-square&logo=streamlit" alt="Streamlit">
+<img src="https://img.shields.io/badge/Scikit--Learn-Machine_Learning-orange?style=flat-square&logo=scikit-learn" alt="Scikit-Learn">
+<img src="https://img.shields.io/badge/PostgreSQL-Persistence-blue?style=flat-square&logo=postgresql" alt="PostgreSQL">
+<img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat-square&logo=docker" alt="Docker">
+<img src="https://img.shields.io/badge/Tests-127_Passed-brightgreen?style=flat-square" alt="Tests">
+<img src="https://img.shields.io/badge/ROC--AUC-0.8400-blueviolet?style=flat-square" alt="ROC-AUC">
+
+<br><br>
+
+<table align="center" width="85%">
+  <tr>
+    <td align="center">
+      <h2>Live Dashboard</h2>
+      <p>
+        Real-time recovery intelligence dashboard with prediction, economic strategy simulation,<br>bounded recovery decisions, prioritization, monitoring and auditability.
+      </p>
+      <br>
+      <a href="https://ai-revenue-recovery-mbac.onrender.com">
+        <img src="https://img.shields.io/badge/OPEN_LIVE_DASHBOARD-FF4B4B?style=for-the-badge&logo=render" alt="Open Live Dashboard">
+      </a>
+      <br><br>
+      <code>ai-revenue-recovery-mbac.onrender.com</code>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<sub><em>Synthetic-data demonstration. Recovery outcomes, action costs, and recovery multipliers are simulated assumptions. No real Razorpay customer/payment data is used and no live payment execution occurs.</em></sub>
+
 </div>
-
-<br />
-
-## Table of Contents
-1. [Overview](#1-overview)
-2. [Problem](#2-problem)
-3. [Solution](#3-solution)
-4. [Architecture](#4-architecture)
-5. [Recovery Decision Flow](#5-recovery-decision-flow)
-6. [Model Evaluation](#6-model-evaluation)
-7. [Economic Optimization](#7-economic-optimization)
-8. [Explainability](#8-explainability)
-9. [Monitoring](#9-monitoring)
-10. [Closed-Loop Outcome Simulation](#10-closed-loop-outcome-simulation)
-11. [Audit Trail](#11-audit-trail)
-12. [Real-Time Inference](#12-real-time-inference)
-13. [PostgreSQL / Neon](#13-postgresql--neon)
-14. [Dashboard](#14-dashboard)
-15. [Project Structure](#15-project-structure)
-16. [Quick Start](#16-quick-start)
-17. [Environment Variables](#17-environment-variables)
-18. [Testing](#18-testing)
-19. [Limitations & Assumptions](#19-limitations--assumptions)
-20. [Implementation Status](#20-implementation-status)
-21. [Tech Stack](#21-tech-stack)
-22. [Deployment](#22-deployment)
-23. [Author](#23-author)
 
 ---
 
-## 🚀 Live Demo
+## 📑 Table of Contents
 
-**[Open the deployed AI Revenue Recovery Engine](https://ai-revenue-recovery-mbac.onrender.com)**
-
-- Deployed on Render using Docker
-- Neon PostgreSQL persistence
-- Synthetic data demonstration
-- No real Razorpay payment execution
+<table width="100%">
+<tr>
+<td valign="top">
+1. <a href="#1-overview">Overview</a><br>
+2. <a href="#2-why-this-approach">Why This Approach</a><br>
+3. <a href="#3-architecture">Architecture</a><br>
+4. <a href="#4-end-to-end-recovery-pipeline">End-to-End Recovery Pipeline</a><br>
+5. <a href="#5-key-capabilities">Key Capabilities</a><br>
+6. <a href="#6-model-evaluation">Model Evaluation</a>
+</td>
+<td valign="top">
+7. <a href="#7-recovery-strategy-benchmark">Recovery Strategy Benchmark</a><br>
+8. <a href="#8-bounded-recovery-orchestration">Bounded Recovery Orchestration</a><br>
+9. <a href="#9-business-adjusted-prioritization">Business-Adjusted Prioritization</a><br>
+10. <a href="#10-dashboard">Dashboard</a><br>
+11. <a href="#11-visual-results">Visual Results</a><br>
+12. <a href="#12-project-structure">Project Structure</a>
+</td>
+<td valign="top">
+13. <a href="#13-quick-start">Quick Start</a><br>
+14. <a href="#14-deployment">Deployment</a><br>
+15. <a href="#15-limitations">Limitations</a><br>
+16. <a href="#16-future-enhancements">Future Enhancements</a><br>
+17. <a href="#17-author">Author</a>
+</td>
+</tr>
+</table>
 
 ---
 
 ## 1. Overview
-The **AI Revenue Recovery Engine** is a comprehensive machine learning and decisioning pipeline designed to tackle the challenge of failed digital payments. Instead of relying on static retry schedules, this engine uses historical telemetry to predict the probability of recovery, calibrates that probability, and makes cost-aware retry decisions designed to maximize net revenue while minimizing unnecessary customer friction.
 
-## 2. Problem
-Failed payments directly translate to **revenue at risk** for merchants. However, blindly retrying every failed payment is inefficient:
-- **Direct Costs:** Each payment gateway retry incurs a small fee.
-- **Customer Friction:** Repeated failed charges can trigger bank freezes or frustrate customers.
-- **Resource Allocation:** Time spent retrying hopeless payments (e.g., permanently closed accounts) is wasted.
+AI Revenue Recovery Engine is an end-to-end machine-learning and decisioning system designed to recover revenue from failed digital payments more intelligently.
 
-Recovery decisions must intelligently weigh the **probability of success**, the **payment amount**, historical customer behavior, and the underlying context of the failure to optimize the recovery effort.
+Instead of blindly retrying every failed payment, the system:
+- **✓** Predicts recovery probability
+- **✓** Estimates expected recovery value
+- **✓** Evaluates action economics
+- **✓** Applies bounded recovery guardrails
+- **✓** Prioritizes high-value recovery opportunities
+- **✓** Simulates outcomes
+- **✓** Monitors distribution drift
+- **✓** Maintains an audit trail
+- **✓** Optionally persists decisions in PostgreSQL
 
-## 3. Solution
-This project implements a fully integrated pipeline that moves beyond pure probability prediction to economic decision-making:
-- **Probability Prediction:** A Logistic Regression model predicting the likelihood of recovery.
-- **Calibrated Probabilities:** Isotonic calibration ensures predictions represent true mathematical probabilities.
-- **Expected Recoverable Revenue:** Combining probability with the transaction amount to prioritize high-value efforts.
-- **Rule-Based Decision Routing:** Classifying actions (Retry, Reminder, Manual Review).
-- **Cost-Aware Threshold Optimization:** Evaluating strategies to find the perfect economic balance between retry costs and recovered revenue.
-- **Outcome Simulation:** Generating synthetic outcomes to measure strategy performance.
-- **Auditability & Traceability:** Explaining *why* a decision was made and recording it securely.
-- **Monitoring:** Detecting data drift to maintain model integrity.
-- **Persistent Storage:** Storing decisions and audits reliably via PostgreSQL.
+**Core idea:**  
+`FAILED PAYMENT` → `PREDICT` → `ECONOMIC DECISION` → `BOUNDED ACTION` → `PRIORITIZE` → `VERIFY`
 
 ---
 
-## 4. Architecture
+## 2. Why This Approach?
+
+This is not only a classifier. It is a robust recovery decision system.
+
+| Typical Approach | AI Revenue Recovery Engine |
+|---|---|
+| Detect failed payment | Detect + validate inputs |
+| Retry blindly | Predict recovery probability |
+| Fixed retry rules | Cost-aware strategy selection |
+| Probability only | Probability + expected recovery value |
+| Unlimited retry risk | Bounded recovery guardrails |
+| Same priority for every payment | Business-adjusted recovery queue |
+| Individual prediction only | 20K-payment strategy benchmark |
+| No operational history | Audit trail + persistence |
+| No monitoring | PSI drift monitoring |
+
+---
+
+## 3. Architecture
 
 ```mermaid
-graph TD
-    A[Incoming Failed Payment Event] --> B(Data Validation)
-    B --> C(ML Prediction - Logistic Regression)
-    C --> D(Isotonic Probability Calibration)
-    D --> E(Expected Recoverable Revenue)
-    E --> F{Recovery Decision Engine}
-
-    F --> G(Strategy Optimization)
-    F --> H(Decision Trace / Explainability)
-
-    G --> I[Outcome Simulation]
-    H --> J[Audit Trail]
-    I --> J
-
-    J --> K[(Neon PostgreSQL Database)]
-    C -.-> L(Data Quality & Drift Monitoring)
-
-    K --> M((Streamlit Control Center))
+flowchart TD
+    A[Failed Payment] --> B[Input Validation]
+    B --> C[Feature Pipeline]
+    C --> D[ML Recovery Prediction]
+    D --> E[Recovery Probability]
+    E --> F[Expected Recovery]
+    F --> G[Cost-Aware Strategy]
+    G --> H[Bounded Recovery Policy]
+    H --> I[Business-Adjusted Prioritization]
+    I --> J[Outcome Simulation]
+    J --> K[Monitoring + Audit]
+    K --> L[(Optional PostgreSQL Persistence)]
+    
+    M[Streamlit Control Center] -.->|Manages / Queries| A
 ```
+*(Note: System orchestrates offline simulations. No live execution API is provided).*
 
 ---
 
-## 5. Recovery Decision Flow
-The system applies logical boundaries to raw probabilities. The baseline rule-based boundaries (Stage 5) determine the recommended action:
+## 4. End-to-End Recovery Pipeline
 
-- **HIGH (Probability >= 0.65)** ➔ `Retry Payment` (Silent background retry)
-- **MEDIUM (Probability 0.35 - 0.64)** ➔ `Payment Method Reminder` (Email/SMS to customer)
-- **LOW (Probability < 0.35)** ➔ `Manual Review / Stop Automatic Retry` (Suspend subscription)
+### 01 — DETECT
+Failed payment enters the system and inference inputs are strictly validated.
 
-*Note: The Stage 5 rule-based decision boundaries above are structurally distinct from the Stage 8 Economic Optimization thresholds, which dynamically sweep across probabilities based on explicit simulated cost assumptions.*
+### 02 — PREDICT
+The calibrated ML model estimates the probability of eventual recovery.
 
-<div align="center">
-  <img src="reports/recovery_priority_distribution.png" width="600" alt="Recovery Priority Distribution">
-  <br>
-  <img src="reports/expected_recovery_distribution.png" width="600" alt="Expected Recovery Distribution">
-</div>
+### 03 — DECIDE
+Expected recovery is compared with action economics and bounded policy constraints.
+
+### 04 — PRIORITIZE
+Business-adjusted expected recovery determines queue order.
+
+### 05 — VERIFY
+Outcomes are simulated, decisions are audited, and distributions can be monitored for drift.
+
+> **Note:** Prioritization controls queue order. The bounded recovery policy controls whether an action is allowed.
+
+---
+
+## 5. Key Capabilities
+
+<table width="100%">
+<tr>
+<td width="50%" valign="top">
+<b>Recovery Prediction</b><br>
+Calibrated ML probability estimation.
+<br><br>
+<b>Cost-Aware Strategy Optimization</b><br>
+Compares recovery value against action cost and evaluates threshold sensitivity.
+<br><br>
+<b>Explainable Decision Trace</b><br>
+Separates model estimate, economic estimate, policy decision and business priority.
+<br><br>
+<b>Input Validation</b><br>
+Rejects invalid inference inputs before ML execution.
+<br><br>
+<b>Bounded Recovery Orchestration</b><br>
+Enforces probability, economic viability and maximum-attempt stopping rules.
+</td>
+<td width="50%" valign="top">
+<b>Business-Adjusted Prioritization</b><br>
+Ranks recovery opportunities using expected recovery value and subscription business context.
+<br><br>
+<b>Closed-Loop Outcome Simulation</b><br>
+Simulates action outcomes and net recovered revenue.
+<br><br>
+<b>PSI Drift Monitoring</b><br>
+Uses PSI-based monitoring and synthetic drift scenarios.
+<br><br>
+<b>Audit Trail & Persistence</b><br>
+Records recovery decisions and metadata, with optional PostgreSQL persistence.
+<br><br>
+<b>Docker Deployment</b><br>
+Containerized production-style prototype deployment.
+</td>
+</tr>
+</table>
 
 ---
 
 ## 6. Model Evaluation
-The engine utilizes a **Logistic Regression** model trained and evaluated using 5-fold Stratified K-Fold cross-validation on a **synthetic dataset**.
 
-**Calibration:** To ensure predicted probabilities map directly to real-world likelihoods, we applied Isotonic Calibration.
-
-### Key Metrics (Mean ± Std)
 | Metric | Uncalibrated LR | Calibrated LR |
-|:---|:---|:---|
+|---|---:|---:|
 | **Accuracy** | 0.7588 ± 0.0038 | 0.7628 ± 0.0031 |
 | **Precision** | 0.7041 ± 0.0067 | 0.7391 ± 0.0083 |
 | **Recall** | 0.7590 ± 0.0116 | 0.6945 ± 0.0222 |
+| **F1** | 0.7304 ± 0.0046 | 0.7159 ± 0.0088 |
 | **ROC-AUC** | 0.8401 ± 0.0027 | 0.8400 ± 0.0027 |
-| **Brier Score** | 0.1631 ± 0.0011 | 0.1608 ± 0.0015 |
+| **PR-AUC** | 0.8020 ± 0.0065 | 0.7989 ± 0.0067 |
+| **Brier** | 0.1631 ± 0.0011 | 0.1608 ± 0.0015 |
 
-*Interpretation:* The baseline Logistic Regression model is inherently well-calibrated for this dataset. Isotonic calibration provided a marginal improvement to the Brier Score, making the outputs highly reliable for expected-value financial calculations.
+Isotonic calibration was retained because the Brier score improved from 0.1631 to 0.1608.
+
+*All evaluation results are based on the synthetic dataset.*
 
 <div align="center">
-  <img src="reports/calibration_curve.png" width="500" alt="Calibration Curve">
+  <img src="reports/roc_curve.png" width="60%" alt="ROC Curve" />
+  <br/>
+  <sub>Model evaluation (ROC-AUC) on the synthetic recovery dataset.</sub>
 </div>
 
 ---
 
-## 7. Economic Optimization
-Instead of relying on arbitrary probability thresholds, the engine sweeps through all potential thresholds to maximize net revenue based on explicit economic assumptions.
+## 7. Recovery Strategy Benchmark
 
-**Synthetic Simulation Assumptions:**
-- `retry_cost`: ₹5.00 (gateway fee)
-- `customer_friction_cost`: ₹45.00 (implicit cost of annoying customer)
-- **Effective Retry Cost**: ₹50.00
-- `reminder_cost`: ₹1.00 (email/SMS)
-- `manual_review_cost`: ₹100.00 (human agent time)
-- `retry_multiplier`: 1.0 (baseline)
-- `reminder_multiplier`: 0.50 (reminders are less effective than direct retries)
-- `manual_review_multiplier`: 0.75 (human intervention success rate)
+The same synthetic 20,000-payment batch was evaluated across four methodologies:
+- **A** — Blind Retry
+- **B** — Current Rule-Based
+- **C** — Optimized Selective
+- **D** — Bounded Recovery Orchestrator
 
-### Strategy Comparison
-- **Strategy A (Blind Retry):** Retry every single failed payment regardless of probability. Action Cost applies to every payment.
-- **Strategy B (Current Rule-Based):** Stage 5 logic (>= 0.65 Retry, 0.35 - 0.64 Reminder, < 0.35 Manual Review). Action costs and specific recovery multipliers apply based on probability bands.
-- **Strategy C (Optimized Selective):** Sweeps thresholds to find the exact probability cutoff that maximizes Expected Net Recovery. Only retries payments >= threshold, doing nothing below threshold.
+| Strategy | Net Recovered Revenue | ROI |
+|---|---:|---:|
+| **Blind Retry** | ≈ ₹6.11M | 6.11x |
+| **Rule-Based** | ≈ ₹4.53M | 16.21x |
+| **Optimized Selective** | ≈ ₹6.14M | 6.63x |
+| **Bounded Orchestrator** | ≈ ₹2.87M | 15.82x |
 
 <div align="center">
-  <img src="reports/net_recovery_by_threshold.png" width="45%" alt="Net Recovery by Threshold">
-  <img src="reports/strategy_comparison.png" width="45%" alt="Strategy Comparison">
+  <img src="reports/benchmark_net_revenue.png" width="60%" alt="Benchmark Net Revenue" />
+  <br/>
+  <sub>Simulated Net Recovered Revenue across the four recovery strategies.</sub>
+</div>
+<br>
+
+> The benchmark highlights the trade-off between maximizing absolute recovery and maximizing economic efficiency under operational constraints. The bounded orchestrator intentionally enforces stronger stopping behavior.
+
+---
+
+## 8. Bounded Recovery Orchestration
+
+The system controls execution via a rigorous state machine:  
+`FAILED` → `ASSESSED` → `ACTION SELECTED` → `ACTION EXECUTED` → `RECOVERED / FAILED_RECOVERY` → `VERIFIED` → `CLOSED / STOPPED`
+
+**Synthetic benchmark results (Verified guardrails):**
+- **Configured maximum automatic attempts:** 2
+- **Probability stopping:** 347
+- **Economic viability stopping:** 1,226
+- **Maximum-attempt stopping:** 9,925
+- **Manual review:** 0
+- **Invalid state transitions:** 0
+
+---
+
+## 9. Business-Adjusted Prioritization
+
+Prioritization directs operational attention by scaling expected recovery with business context.
+
+**Formula:**
+```text
+base_expected_recovery = recovery_probability × payment_amount
+business_adjusted_expected_recovery = base_expected_recovery × subscription_multiplier
+```
+*(subscription multiplier: 1.5 for subscriptions, 1.0 otherwise)*
+
+**Priority Tiers:**
+- **CRITICAL**: ≥ ₹10,000
+- **HIGH**: ≥ ₹2,500
+- **MEDIUM**: ≥ ₹500
+- **LOW**: < ₹500
+
+**Verified Distribution:**
+- CRITICAL — 16
+- HIGH — 571
+- MEDIUM — 4,972
+- LOW — 14,441
+
+**Verified Concentration:**
+- **Top 1%** → 12.4%
+- **Top 5%** → 33.4%
+- **Top 10%** → 48.3%
+- **Top 20%** → 66.3%
+
+*On the synthetic benchmark, the top 10% of prioritized payments represented 48.3% of total business-adjusted expected recovery value.*
+
+<div align="center">
   <br>
-  <img src="reports/threshold_sensitivity.png" width="600" alt="Threshold Sensitivity">
+  <img src="reports/prioritization_tier_distribution.png" width="60%" alt="Prioritization Tier Distribution" />
+  <br/>
+  <sub>Distribution of priority tiers across the synthetic failed payments.</sub>
 </div>
 
 ---
 
-## 8. Explainability
-Financial decisioning must be transparent. The `DecisionTracer` module provides explicit, deterministic traces for every prediction, detailing:
-- The predicted model probability.
-- The calculated expected recovery value.
-- Hypothetical retry economics (expected net value).
-- The selected action and priority.
-- A human-readable `decision_reason` (e.g., *"Retry Payment selected due to high probability (0.75) and sufficient expected recovery (₹450.00)."*).
-- Key input factors driving the decision.
+## 10. Dashboard
 
-*Note: This traceability relies on the logic and mathematical boundaries of the engine, not on causal SHAP algorithms.*
+The interactive Streamlit dashboard is separated into 9 functional tabs reflecting the complete lifecycle of the recovery orchestration prototype.
 
----
+**Primary Demo Flow:**
+The system is best demonstrated via the **Real-Time Inference** tab:  
+`Real-Time Inference` → `Recovery Probability` → `Expected Recovery` → `Policy Decision` → `Economic Estimate` → `Business Priority` → `Decision Explanation` → `Bounded Recovery Workflow`
 
-## 9. Monitoring
-To prevent silent model degradation, the `monitoring.py` module evaluates ongoing data streams against the original training baseline.
-- **Data Quality:** Missing value checks and type validation.
-- **Population Stability Index (PSI):** Tracks distributional drift in predictions.
-- **Feature Drift:** Monitors numeric bounds and categorical shifts.
-- **Alert Levels:** Gracefully escalates from NORMAL to WARNING to DRIFT based on deviation magnitude.
-
----
-
-## 10. Closed-Loop Outcome Simulation
-To prove the efficacy of the strategies, `OutcomeSimulator` applies Monte Carlo techniques to resolve the payment states based on the recommended actions. This synthetic simulation creates a closed loop, proving exactly how the economic assumptions translate into final recovered revenue across Strategies A, B, and C. *(All outcomes are synthetic simulation results.)*
+**All Tabs:**
+1. Real-Time Inference
+2. Recovery Prioritization
+3. Recovery Benchmark
+4. Strategy Simulator
+5. Batch Analysis
+6. Outcome Simulation
+7. Drift Monitoring
+8. Audit Trail
+9. Database Status
 
 ---
 
-## 11. Audit Trail
-Accountability is critical. The `AuditTrail` module writes every decision, input factor, timestamp, and simulated outcome to a secure, flat schema.
+## 11. Visual Results
 
-This data powers the **Audit Trail** tab in the dashboard, enabling human-in-the-loop review. *(The audit history is based on locally generated synthetic artifacts and does not represent live production events).*
-
----
-
-## 12. Real-Time Inference
-The `RecoveryInferenceService` orchestrates the entire pipeline for single-event processing.
-- Orchestrates Input Validation ➔ ML Prediction ➔ Decision ➔ Explanation ➔ Audit.
-- Exposes processing metadata (timestamps, latency, model version).
-- Gracefully degrades to a stateless mode if the backend database is unavailable.
-- Safely catches exceptions and exposes generic public error messages while preventing raw stack traces.
+<div align="center">
+  <img src="reports/calibration_curve.png" width="45%" style="display:inline-block; margin: 1%" alt="Calibration Curve" />
+  <img src="reports/threshold_sensitivity.png" width="45%" style="display:inline-block; margin: 1%" alt="Threshold Sensitivity" />
+  <br>
+  <sub>Left: Isotonic Calibration Curve. Right: Threshold vs ROI Sensitivity Analysis.</sub>
+</div>
 
 ---
 
-## 13. PostgreSQL / Neon
-The application features a robust persistence layer designed for **Neon PostgreSQL**.
-- **Five-Table Architecture:** `model_versions`, `payment_events`, `recovery_decisions`, `audit_records`, and `recovery_outcomes`.
-- **Idempotency:** Secure uniqueness checks via `idempotency_key` prevent duplicate machine learning inference runs.
-- **Security:** Requires `sslmode=require`. Connection strings are injected strictly via `.env` (`DATABASE_URL`).
-- **Flexibility:** Falls back seamlessly to local Docker PostgreSQL if desired, or operates completely stateless if no database is provided.
-
----
-
-## 14. Dashboard
-The **Streamlit Control Center** (`app/streamlit_app.py`) provides an interactive window into the entire pipeline.
-
-**Available Tabs:**
-1. `Single Payment Simulation`
-2. `Batch Recovery Analysis`
-3. `Strategy Simulator`
-4. `Monitoring`
-5. `Outcome Simulation`
-6. `Audit Trail`
-7. `Real-Time Inference Demo`
-8. `PostgreSQL Status`
-
----
-
-## 15. Project Structure
-The project uses a layered modular architecture (Presentation → Application Services → Domain Logic → ML → Infrastructure) to maintain strict conceptual boundaries:
+## 12. Project Structure
 
 ```text
 .
 ├── app/                           # Presentation Layer (Streamlit Dashboard)
-├── data/                          # Datasets
+├── data/                          # Synthetic Datasets
 ├── docker/                        # Deployment configuration
-│   └── Dockerfile                 # Dockerfile
 ├── docs/                          # Architecture documentation
 ├── models/                        # Serialized ML artifacts
+├── notebooks/                     # Exploratory Data Analysis
+├── reports/                       # Generated analysis and plots
 ├── scripts/                       # Utility/maintenance scripts
 ├── src/                           # Core Engine
-│   ├── domain/                    # Business rules (Recovery Engine, Strategies)
-│   ├── infrastructure/            # Persistence (PostgreSQL, Database)
-│   ├── ml/                        # Machine learning (Training, Evaluation)
-│   ├── services/                  # Application services (src/services: Inference, Audit, Monitoring)
+│   ├── domain/                    # Business rules (Recovery Engine, Policy, Prioritization)
+│   ├── infrastructure/            # Persistence (PostgreSQL, Database config)
+│   ├── ml/                        # Machine learning (Training, Evaluation, Benchmarks)
+│   ├── services/                  # Application services (Inference, Audit, Monitoring)
 │   └── validation/                # Input validation logic
-├── tests/                         # Pytest test suite
-│   ├── integration/
-│   └── unit/
-├── reports/                       # Generated analysis/plots
-├── .dockerignore                  # Docker exclusion rules (at repository root)
-├── .env.example                   # Environment variables template
-├── docker-compose.yml             # Optional Local Postgres
-└── requirements.txt               # Dependencies
+└── tests/                         # Pytest test suite
 ```
 
+---
 
-## 16. Quick Start
+## 13. Quick Start
 
-**1. Clone & Setup Virtual Environment**
+**1. Clone & Setup**
 ```bash
 git clone https://github.com/allknowledge34/AI-Revenue-Recovery.git
 cd AI-Revenue-Recovery
 python3 -m venv .venv
 source .venv/bin/activate
-```
-
-**2. Install Dependencies**
-```bash
 pip install -r requirements.txt
 ```
 
-**3. Configure Environment (Optional but Recommended)**
-```bash
-cp .env.example .env
-# Edit .env and insert your Neon DATABASE_URL
-```
-
-**4. Run Tests**
+**2. Run Test Suite (127 Tests)**
 ```bash
 PYTHONPATH=. pytest -q
 ```
 
-**5. Launch Dashboard**
+**3. Launch Dashboard**
 ```bash
 streamlit run app/streamlit_app.py
 ```
+*(Optional: Provide a `DATABASE_URL` in `.env` for PostgreSQL persistence).*
 
 ---
 
-## 17. Environment Variables
-The application utilizes the following variables via a `.env` file (never committed):
-- `DATABASE_URL`: The PostgreSQL connection string (Neon or local Docker).
-- `MODEL_VERSION`: Logical version string for the active model (e.g., `v1.0`).
-- `TEST_DATABASE_URL`: Isolated database used purely for `pytest` integration tests.
+## 14. Deployment
 
----
-
-## 18. Testing
-The repository maintains strict test coverage ensuring algorithmic and architectural integrity.
-**Current Status:** `90 passed, 6 skipped in ~16s`
-*(Integration tests correctly skip gracefully if `TEST_DATABASE_URL` is unconfigured to protect production databases).*
-
----
-
-## 19. Limitations & Assumptions
-- **Synthetic Dataset:** All models, distributions, and calibrations are based on synthetically generated data mapping to mathematical assumptions, not real-world merchant telemetry.
-- **Simulated Outcomes:** All recovery revenues and economic costs are simulated assumptions, not actual financial guarantees.
-- **No Real Execution:** The system is an intelligence/decisioning demonstration and does **not** execute actual Razorpay payment gateway API calls.
-- **Idempotency Fallback:** If `idempotency_key` is not supplied, the system falls back to a request-scoped UUID, which guarantees insertion but sacrifices true cross-request idempotency.
-- **Distributed Infrastructure:** While PostgreSQL provides robust persistence, this repository lacks the message brokers (Kafka/RabbitMQ) required for high-throughput, distributed event-driven production workloads.
-
----
-
-## 20. Implementation Status
-
-| Feature | Status |
-| :--- | :---: |
-| Synthetic Dataset Generation |  Completed |
-| Logistic Regression Model Training |  Completed |
-| Isotonic Probability Calibration |  Completed |
-| Rule-Based Decision Routing |  Completed |
-| Strategy Simulator & Economic Optimization |  Completed |
-| Decision Tracer (Explainability) |  Completed |
-| Closed-Loop Outcome Simulation |  Completed |
-| Data & Prediction Drift Monitoring |  Completed |
-| Persistent Audit Trail |  Completed |
-| Real-Time Inference Service |  Completed |
-| Neon PostgreSQL Persistence Layer |  Completed |
-| Streamlit Interactive Dashboard |  Completed |
-
----
-
-## 21. Tech Stack
-- **Core:** Python 3.13.7
-- **Data & ML:** Pandas, NumPy, Scikit-Learn
-- **Visualization:** Matplotlib, Seaborn, Streamlit
-- **Database:** Neon PostgreSQL (via `psycopg` binary)
-- **Testing:** Pytest
-
----
-
-## 22. Deployment
-The application is fully containerized and deployed on Render.
-
-**Render Configuration:**
-- **Service type:** Web Service
-- **Runtime:** Docker
-- **Branch:** main
-- **Root Directory:** `.` *(Repository root is the Docker build context)*
-- **Dockerfile Path:** `docker/Dockerfile`
-- **Port:** `8501`
-- **DATABASE_URL:** Provided securely via Render environment variables.
-- **MODEL_VERSION:** `v1.0`
-
-**Local Docker Usage:**
-Build the image from the repository root:
-```bash
-docker build -f docker/Dockerfile -t ai-revenue-recovery .
-```
-Run the container:
-```bash
-docker run -d -p 8501:8501 --name streamlit-test ai-revenue-recovery
+```mermaid
+flowchart LR
+    A[GitHub] --> B[Render Docker Web Service]
+    B --> C[Streamlit Dashboard]
+    C -.-> D[(Optional Neon PostgreSQL)]
 ```
 
-*Note: The `.dockerignore` file is intentionally located at the repository root to correctly exclude `.env` and local caches from the root build context. Docker Compose PostgreSQL is only provided as an optional local fallback.*
+- `DATABASE_URL` is securely supplied via environment variables in Render.
 
+---
 
-## 23. Author
+## 15. Limitations
+- Synthetic dataset
+- Simulated recovery outcomes
+- Simulated action costs and recovery multipliers
+- No real Razorpay payment execution
+- No real customer/payment data
+- Probabilities are estimates, not guarantees
+- Business prioritization is queue ordering, not action authorization
+- PostgreSQL persistence is optional
+
+---
+
+## 16. Future Enhancements
+*Note: The following items represent proposed future integration work, not currently implemented features.*
+- Real Razorpay webhook/payment integration
+- Real recovery execution
+- Online outcome feedback
+- Richer customer communication
+- Production telemetry
+- Merchant-configurable recovery policies
+
+---
+
+## 17. Author
 **Razorpay AI Buildathon 2026 Submission**
