@@ -8,6 +8,7 @@ from src.validation.data_validator import DataValidator
 from src.domain.recovery_engine import RecoveryEngine
 from src.services.explanation.decision_trace import DecisionTracer
 from src.services.audit.audit_trail import AuditTrail
+from src.services.recovery.recovery_orchestrator import RecoveryOrchestrator
 
 
 class RecoveryInferenceService:
@@ -36,6 +37,7 @@ class RecoveryInferenceService:
         self.engine = RecoveryEngine()
         self.tracer = DecisionTracer(simulator_cost=simulator_cost, simulator_threshold=simulator_threshold)
         self.auditor = AuditTrail(simulator_cost=simulator_cost, simulator_threshold=simulator_threshold)
+        self.orchestrator = RecoveryOrchestrator()
         self.enable_persistence = enable_persistence
 
         self._model_version = os.environ.get('MODEL_VERSION', 'unversioned')
@@ -169,6 +171,30 @@ class RecoveryInferenceService:
                 return result
 
             trace = self.tracer.generate_trace(event, engine_result)
+
+            # Execute Bounded Recovery Workflow
+            event_context = {
+                'payment_id': payment_id,
+                'recovery_probability': prob,
+                'recovery_attempts_so_far': int(event.get('recovery_attempts_so_far', 0)),
+                'payment_amount': float(event.get('payment_amount', 0.0)),
+                'expected_recovery': engine_result.get('expected_recovery', 0.0),
+                'recommended_action': engine_result.get('recommended_action', 'Unknown')
+            }
+
+            # Using payment_id hash for deterministic seeded execution
+            import hashlib
+            seed_bytes = hashlib.sha256(payment_id.encode("utf-8")).digest()
+            seed = int.from_bytes(seed_bytes[:8], "big") % (2**32)
+            orch_result = self.orchestrator.process_event(event_context, seed=seed)
+            result['bounded_recovery'] = orch_result
+
+            # Populate engine_result for persistence compatibility
+            engine_result['simulated_recovered'] = orch_result.get('simulated_recovered')
+            engine_result['simulated_recovered_revenue'] = orch_result.get('recovered_amount')
+            engine_result['action_cost'] = orch_result.get('action_cost')
+            engine_result['net_recovered_revenue'] = orch_result.get('net_recovered_revenue')
+
 
             result['prediction'] = {'recovery_probability': prob}
             result['decision'] = {
