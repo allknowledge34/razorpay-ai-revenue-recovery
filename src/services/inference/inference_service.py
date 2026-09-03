@@ -4,10 +4,10 @@ import datetime
 import uuid
 from typing import Dict, Any, Optional
 
-from src.data_validator import DataValidator
-from src.recovery_engine import RecoveryEngine
-from src.decision_trace import DecisionTracer
-from src.audit_trail import AuditTrail
+from src.validation.data_validator import DataValidator
+from src.domain.recovery_engine import RecoveryEngine
+from src.services.explanation.decision_trace import DecisionTracer
+from src.services.audit.audit_trail import AuditTrail
 
 
 class RecoveryInferenceService:
@@ -48,7 +48,7 @@ class RecoveryInferenceService:
         if self._model_version_id is not None:
             return self._model_version_id
         try:
-            from src.database import get_or_create_model_version
+            from src.infrastructure.database.database import get_or_create_model_version
             self._model_version_id = get_or_create_model_version(
                 model_name='revenue_recovery_model',
                 model_version=self._model_version,
@@ -73,7 +73,7 @@ class RecoveryInferenceService:
         customer_id = event.get('customer_id')
 
         # Resolve idempotency key
-        from src.db_persistence import resolve_idempotency_key
+        from src.infrastructure.database.db_persistence import resolve_idempotency_key
         idempotency_key, idempotency_key_source = resolve_idempotency_key(event)
 
         result: Dict[str, Any] = {
@@ -112,12 +112,12 @@ class RecoveryInferenceService:
 
             if self.enable_persistence:
                 try:
-                    from src.db_persistence import (
+                    from src.infrastructure.database.db_persistence import (
                         persist_payment_event, update_event_status,
                         get_existing_decision_for_event, persist_recovery_decision,
                         persist_audit_record, persist_simulated_outcome
                     )
-                    from src.database import initialize_schema
+                    from src.infrastructure.database.database import initialize_schema
 
                     initialize_schema()
 

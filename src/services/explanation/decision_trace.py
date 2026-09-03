@@ -59,7 +59,7 @@ if __name__ == "__main__":
     import sys
     import os
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from src.recovery_engine import RecoveryEngine
+    from src.domain.recovery_engine import RecoveryEngine
     
     engine = RecoveryEngine()
     tracer = DecisionTracer(simulator_cost=50.0, simulator_threshold=0.05)

@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.outcome_simulator import OutcomeSimulator
+from src.services.outcome.outcome_simulator import OutcomeSimulator
 
 def test_deterministic_simulation_same_seed():
     sim1 = OutcomeSimulator(seed=42)

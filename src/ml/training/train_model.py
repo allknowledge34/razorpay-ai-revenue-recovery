@@ -242,7 +242,7 @@ The SHAP analysis revealed the most influential features driving predictions for
             {
                 "cell_type": "markdown",
                 "metadata": {},
-                "source": ["Check `src/train_model.py` for the full, reproducible training pipeline, evaluation, and SHAP explainability code."]
+                "source": ["Check `src.ml.training.train_model.py` for the full, reproducible training pipeline, evaluation, and SHAP explainability code."]
             }
         ],
         "metadata": {

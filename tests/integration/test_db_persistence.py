@@ -64,13 +64,13 @@ def invalid_event():
 @pytest.fixture
 def service_no_db():
     """Inference service with persistence disabled — no DB required."""
-    from src.inference_service import RecoveryInferenceService
+    from src.services.inference.inference_service import RecoveryInferenceService
     return RecoveryInferenceService(enable_persistence=False)
 
 
 
 def test_idempotency_key_caller_supplied():
-    from src.db_persistence import resolve_idempotency_key
+    from src.infrastructure.database.db_persistence import resolve_idempotency_key
     event = {'payment_id': 'pay_001', 'idempotency_key': 'stable-key-A'}
     key, source = resolve_idempotency_key(event)
     assert key == 'stable-key-A'
@@ -78,7 +78,7 @@ def test_idempotency_key_caller_supplied():
 
 
 def test_idempotency_key_event_id_fallback():
-    from src.db_persistence import resolve_idempotency_key
+    from src.infrastructure.database.db_persistence import resolve_idempotency_key
     event = {'payment_id': 'pay_001', 'event_id': 'evt-uuid-xyz'}
     key, source = resolve_idempotency_key(event)
     assert key == 'evt-uuid-xyz'
@@ -86,7 +86,7 @@ def test_idempotency_key_event_id_fallback():
 
 
 def test_idempotency_key_request_scoped_fallback():
-    from src.db_persistence import resolve_idempotency_key
+    from src.infrastructure.database.db_persistence import resolve_idempotency_key
     event = {'payment_id': 'pay_001'}
 
     key, source = resolve_idempotency_key(event)
@@ -163,9 +163,9 @@ def test_pipeline_exception_safe_message(service_no_db, valid_event, monkeypatch
 
 def test_db_unavailable_inference_still_works(valid_event):
     """When DB is unavailable, inference runs in stateless mode — no crash."""
-    from src.inference_service import RecoveryInferenceService
+    from src.services.inference.inference_service import RecoveryInferenceService
 
-    with patch('src.database.initialize_schema', side_effect=Exception("DB down")):
+    with patch('src.infrastructure.database.database.initialize_schema', side_effect=Exception("DB down")):
         svc = RecoveryInferenceService(enable_persistence=True)
         # initialize_schema will fail → stateless fallback
         res = svc.predict_event(valid_event)
@@ -178,7 +178,7 @@ def test_db_unavailable_inference_still_works(valid_event):
 
 def test_database_unavailable_error_is_not_exposed():
     """DatabaseUnavailableError must not expose credential details."""
-    from src.database import DatabaseUnavailableError
+    from src.infrastructure.database.database import DatabaseUnavailableError
     err = DatabaseUnavailableError("Could not connect to PostgreSQL.")
     assert "password" not in str(err).lower()
     assert "secret" not in str(err).lower()
@@ -187,7 +187,7 @@ def test_database_unavailable_error_is_not_exposed():
 
 def test_is_database_available_returns_false_when_no_url():
     """is_database_available must return False when DATABASE_URL is not set."""
-    from src.database import is_database_available
+    from src.infrastructure.database.database import is_database_available
     with patch.dict(os.environ, {}, clear=True):
         # Remove DATABASE_URL if set
         env = dict(os.environ)
@@ -209,7 +209,7 @@ integration = pytest.mark.skipif(
 def test_integration_schema_initialization():
     """Schema creation is idempotent (IF NOT EXISTS)."""
     with patch.dict(os.environ, {'DATABASE_URL': TEST_DB_URL}):
-        from src.database import initialize_schema
+        from src.infrastructure.database.database import initialize_schema
         initialize_schema()
         initialize_schema()  # second call must not fail
 
@@ -218,8 +218,8 @@ def test_integration_schema_initialization():
 def test_integration_valid_event_persisted(valid_event):
     """A valid event should be persisted to payment_events."""
     with patch.dict(os.environ, {'DATABASE_URL': TEST_DB_URL}):
-        from src.database import initialize_schema, get_connection
-        from src.db_persistence import persist_payment_event
+        from src.infrastructure.database.database import initialize_schema, get_connection
+        from src.infrastructure.database.db_persistence import persist_payment_event
 
         initialize_schema()
         idem_key = f"test-persist-{uuid.uuid4()}"
@@ -241,8 +241,8 @@ def test_integration_valid_event_persisted(valid_event):
 def test_integration_duplicate_idempotency_key(valid_event):
     """Second insert with same idempotency_key must be detected as duplicate."""
     with patch.dict(os.environ, {'DATABASE_URL': TEST_DB_URL}):
-        from src.database import initialize_schema
-        from src.db_persistence import persist_payment_event
+        from src.infrastructure.database.database import initialize_schema
+        from src.infrastructure.database.db_persistence import persist_payment_event
 
         initialize_schema()
         idem_key = f"test-dup-{uuid.uuid4()}"
@@ -260,7 +260,7 @@ def test_integration_duplicate_idempotency_key(valid_event):
 def test_integration_invalid_event_not_persisted(invalid_event):
     """Invalid events must be rejected before reaching persistence."""
     with patch.dict(os.environ, {'DATABASE_URL': TEST_DB_URL, 'MODEL_VERSION': 'v1.0'}):
-        from src.inference_service import RecoveryInferenceService
+        from src.services.inference.inference_service import RecoveryInferenceService
         svc = RecoveryInferenceService(enable_persistence=True)
         res = svc.predict_event(invalid_event)
 
@@ -276,7 +276,7 @@ def test_integration_decision_and_audit_persisted(valid_event):
     event['idempotency_key'] = idem_key
 
     with patch.dict(os.environ, {'DATABASE_URL': TEST_DB_URL, 'MODEL_VERSION': 'v1.0'}):
-        from src.inference_service import RecoveryInferenceService
+        from src.services.inference.inference_service import RecoveryInferenceService
         svc = RecoveryInferenceService(enable_persistence=True)
         svc._model_version_id = None  # force re-resolution
         res = svc.predict_event(event)
@@ -300,8 +300,8 @@ def test_integration_simulated_outcome_persisted(valid_event):
     event['net_recovered_revenue'] = 4450.0
 
     with patch.dict(os.environ, {'DATABASE_URL': TEST_DB_URL, 'MODEL_VERSION': 'v1.0'}):
-        from src.inference_service import RecoveryInferenceService
-        from src.database import get_connection
+        from src.services.inference.inference_service import RecoveryInferenceService
+        from src.infrastructure.database.database import get_connection
         svc = RecoveryInferenceService(enable_persistence=True)
         svc._model_version_id = None
         res = svc.predict_event(event)

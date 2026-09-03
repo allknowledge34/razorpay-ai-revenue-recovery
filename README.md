@@ -44,6 +44,17 @@
 
 ---
 
+## 🚀 Live Demo
+
+**[Open the deployed AI Revenue Recovery Engine](https://ai-revenue-recovery-mbac.onrender.com)**
+
+- Deployed on Render using Docker
+- Neon PostgreSQL persistence
+- Synthetic data demonstration
+- No real Razorpay payment execution
+
+---
+
 ## 1. Overview
 The **AI Revenue Recovery Engine** is a comprehensive machine learning and decisioning pipeline designed to tackle the challenge of failed digital payments. Instead of relying on static retry schedules, this engine uses historical telemetry to predict the probability of recovery, calibrates that probability, and makes cost-aware retry decisions designed to maximize net revenue while minimizing unnecessary customer friction.
 
@@ -228,35 +239,33 @@ The **Streamlit Control Center** (`app/streamlit_app.py`) provides an interactiv
 ---
 
 ## 15. Project Structure
+The project uses a layered modular architecture (Presentation → Application Services → Domain Logic → ML → Infrastructure) to maintain strict conceptual boundaries:
+
 ```text
 .
-├── app/
-│   └── streamlit_app.py           # Streamlit Dashboard
+├── app/                           # Presentation Layer (Streamlit Dashboard)
 ├── data/                          # Datasets
+├── docker/                        # Deployment configuration
+│   └── Dockerfile                 # Dockerfile
 ├── docs/                          # Architecture documentation
 ├── models/                        # Serialized ML artifacts
-├── src/                           # Core Engine Modules
-│   ├── audit_trail.py
-│   ├── data_validator.py
-│   ├── database.py
-│   ├── db_persistence.py
-│   ├── decision_trace.py
-│   ├── generate_dataset.py
-│   ├── inference_service.py
-│   ├── monitoring.py
-│   ├── outcome_simulator.py
-│   ├── recovery_engine.py
-│   ├── recovery_strategy.py
-│   ├── robust_evaluation.py
-│   └── train_model.py
+├── scripts/                       # Utility/maintenance scripts
+├── src/                           # Core Engine
+│   ├── domain/                    # Business rules (Recovery Engine, Strategies)
+│   ├── infrastructure/            # Persistence (PostgreSQL, Database)
+│   ├── ml/                        # Machine learning (Training, Evaluation)
+│   ├── services/                  # Application services (src/services: Inference, Audit, Monitoring)
+│   └── validation/                # Input validation logic
 ├── tests/                         # Pytest test suite
+│   ├── integration/
+│   └── unit/
+├── reports/                       # Generated analysis/plots
+├── .dockerignore                  # Docker exclusion rules (at repository root)
 ├── .env.example                   # Environment variables template
 ├── docker-compose.yml             # Optional Local Postgres
-├── requirements.txt               # Dependencies
-└── README.md
+└── requirements.txt               # Dependencies
 ```
 
----
 
 ## 16. Quick Start
 
@@ -344,10 +353,30 @@ The repository maintains strict test coverage ensuring algorithmic and architect
 ---
 
 ## 22. Deployment
-The application is fully container-ready via `docker-compose` (for the database layer) and can easily be deployed to platforms like **Render**, **Heroku**, or **Streamlit Community Cloud**.
-*(Currently, this repository is configured for local demonstration; no live URL is officially maintained).*
+The application is fully containerized and deployed on Render.
 
----
+**Render Configuration:**
+- **Service type:** Web Service
+- **Runtime:** Docker
+- **Branch:** main
+- **Root Directory:** `.` *(Repository root is the Docker build context)*
+- **Dockerfile Path:** `docker/Dockerfile`
+- **Port:** `8501`
+- **DATABASE_URL:** Provided securely via Render environment variables.
+- **MODEL_VERSION:** `v1.0`
+
+**Local Docker Usage:**
+Build the image from the repository root:
+```bash
+docker build -f docker/Dockerfile -t ai-revenue-recovery .
+```
+Run the container:
+```bash
+docker run -d -p 8501:8501 --name streamlit-test ai-revenue-recovery
+```
+
+*Note: The `.dockerignore` file is intentionally located at the repository root to correctly exclude `.env` and local caches from the root build context. Docker Compose PostgreSQL is only provided as an optional local fallback.*
+
 
 ## 23. Author
 **Razorpay AI Buildathon 2026 Submission**

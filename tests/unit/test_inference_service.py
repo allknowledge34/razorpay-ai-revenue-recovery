@@ -1,6 +1,6 @@
 import pytest
 import math
-from src.inference_service import RecoveryInferenceService
+from src.services.inference.inference_service import RecoveryInferenceService
 
 @pytest.fixture
 def service():

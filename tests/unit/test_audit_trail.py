@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import datetime
-from src.audit_trail import AuditTrail
+from src.services.audit.audit_trail import AuditTrail
 
 @pytest.fixture
 def sample_record():

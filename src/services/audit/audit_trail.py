@@ -5,8 +5,8 @@ import hashlib
 from typing import Dict, Any, List, Optional
 import os
 
-from src.decision_trace import DecisionTracer
-from src.recovery_strategy import RecoverySimulator
+from src.services.explanation.decision_trace import DecisionTracer
+from src.domain.recovery_strategy import RecoverySimulator
 
 class AuditTrail:
     def __init__(self, simulator_cost=50.0, simulator_threshold=0.05):
@@ -128,7 +128,7 @@ class AuditTrail:
         return filepath
 
 if __name__ == "__main__":
-    from src.outcome_simulator import OutcomeSimulator
+    from src.services.outcome.outcome_simulator import OutcomeSimulator
     
     sim = OutcomeSimulator(seed=42)
     df_sim = sim.simulate_strategy("Optimized Selective Strategy")

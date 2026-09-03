@@ -1,6 +1,6 @@
 import pytest
 import math
-from src.data_validator import DataValidator
+from src.validation.data_validator import DataValidator
 
 def get_valid_record():
     return {

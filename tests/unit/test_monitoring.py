@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.monitoring import MonitoringEngine
+from src.services.monitoring.monitoring import MonitoringEngine
 
 def get_valid_record():
     return {

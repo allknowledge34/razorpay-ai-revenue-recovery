@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 
-from src.recovery_strategy import RecoverySimulator
+from src.domain.recovery_strategy import RecoverySimulator
 
 class OutcomeSimulator:
     def __init__(self, data_path='data/failed_payments_scored.csv', seed=42):

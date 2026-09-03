@@ -1,5 +1,5 @@
 """
-src/database.py — PostgreSQL connection layer.
+src.infrastructure.database.database.py — PostgreSQL connection layer.
 
 Reads DATABASE_URL from environment (via .env or system env).
 Provides a context-managed connection and a schema initializer.

@@ -1,5 +1,5 @@
 """
-src/db_persistence.py — PostgreSQL persistence operations.
+src.infrastructure.database.db_persistence.py — PostgreSQL persistence operations.
 
 Handles all database writes for the inference pipeline:
   - payment event persistence (with idempotency)
@@ -19,7 +19,7 @@ import logging
 import os
 from typing import Dict, Any, Optional, Tuple
 
-from src.database import get_connection, DatabaseUnavailableError
+from src.infrastructure.database.database import get_connection, DatabaseUnavailableError
 
 logger = logging.getLogger(__name__)
 

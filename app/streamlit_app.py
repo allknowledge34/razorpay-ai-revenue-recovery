@@ -8,9 +8,9 @@ import seaborn as sns
 
 # Add root directory to path to import src
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.recovery_engine import RecoveryEngine
-from src.recovery_strategy import RecoverySimulator
-from src.decision_trace import DecisionTracer
+from src.domain.recovery_engine import RecoveryEngine
+from src.domain.recovery_strategy import RecoverySimulator
+from src.services.explanation.decision_trace import DecisionTracer
 
 st.set_page_config(page_title="AI Revenue Recovery Engine", layout="wide")
 
@@ -86,7 +86,7 @@ def main():
 
             try:
                 # Validate the record explicitly so we can show user-friendly errors
-                from src.data_validator import DataValidator
+                from src.validation.data_validator import DataValidator
                 val_result = DataValidator.validate_record(record)
                 if not val_result.is_valid:
                     st.error("Validation Error:")
@@ -318,7 +318,7 @@ def main():
         st.info("Disclaimer: This is a synthetic/offline monitoring framework demonstrated using synthetic data. It does not represent interactive monitoring, real customer data, real Razorpay metrics, or production model degradation.")
         
         try:
-            from src.monitoring import MonitoringEngine
+            from src.services.monitoring.monitoring import MonitoringEngine
             monitor = MonitoringEngine()
             
             df_raw = pd.read_csv("data/failed_payments.csv")
@@ -370,7 +370,7 @@ def main():
         st.info("Disclaimer: This is a synthetic simulation of recovery outcomes based on assumed action effectiveness and costs. It does not represent actual Razorpay recovery execution, real customer behavior, or real payment processing.")
         
         try:
-            from src.outcome_simulator import OutcomeSimulator
+            from src.services.outcome.outcome_simulator import OutcomeSimulator
             
             st.markdown("### Methodology")
             st.write("Model Probability → Action Effectiveness → Synthetic Outcome → Revenue → Cost → Net Impact")
@@ -437,7 +437,7 @@ def main():
         st.info("Disclaimer: Audit timestamps represent audit record generation time, not payment execution time. This is an AUDITABILITY layer, not real payment execution. The displayed audit history is loaded from the locally generated audit artifact. All model predictions and simulated outcomes are based on synthetic data and do not represent real Razorpay transactions.")
         
         try:
-            from src.audit_trail import AuditTrail
+            from src.services.audit.audit_trail import AuditTrail
             import os
             
             audit_file = 'reports/recovery_audit_trail.csv'
@@ -491,7 +491,7 @@ def main():
                 st.info("Note: Generating a default audit trail creates a new local synthetic audit artifact from the deterministic outcome simulation.")
                 if st.button("Generate Default Audit Trail"):
                     with st.spinner("Generating..."):
-                        from src.outcome_simulator import OutcomeSimulator
+                        from src.services.outcome.outcome_simulator import OutcomeSimulator
                         sim = OutcomeSimulator(seed=42)
                         df_sim = sim.simulate_strategy("Optimized Selective Strategy")
                         auditor = AuditTrail()
@@ -508,7 +508,7 @@ def main():
         st.info("Disclaimer: This is a local synchronous inference demonstration, not a real payment execution system. It processes ONE event through the inference pipeline (Validation -> Prediction -> Decision -> Explanation).")
         
         try:
-            from src.inference_service import RecoveryInferenceService
+            from src.services.inference.inference_service import RecoveryInferenceService
             service = RecoveryInferenceService()
             
             st.subheader("Simulate Incoming Event")
@@ -576,7 +576,7 @@ def main():
         )
 
         try:
-            from src.database import is_database_available, get_table_counts, get_database_url
+            from src.infrastructure.database.database import is_database_available, get_table_counts, get_database_url
 
             db_url = get_database_url()
             if not db_url:

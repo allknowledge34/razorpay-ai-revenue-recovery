@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import os
-from src.data_validator import DataValidator
+from src.validation.data_validator import DataValidator
 
 class MonitoringEngine:
     def __init__(self):

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import joblib
-from src.data_validator import DataValidator
+from src.validation.data_validator import DataValidator
 
 import os
 import matplotlib.pyplot as plt
