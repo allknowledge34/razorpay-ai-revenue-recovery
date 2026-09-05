@@ -360,7 +360,7 @@ The system is best demonstrated via the **Real-Time Inference** tab:
 
 **1. Clone & Setup**
 ```bash
-git clone https://github.com/allknowledge34/AI-Revenue-Recovery.git
+git clone https://ai-revenue-recovery-mbac.onrender.com
 cd AI-Revenue-Recovery
 python3 -m venv .venv
 source .venv/bin/activate
